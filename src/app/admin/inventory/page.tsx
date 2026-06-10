@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Plus, Search, Edit, Trash2, Eye, X, Upload } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, X, Upload, Copy } from "lucide-react";
 import Image from "next/image";
 import type { VehicleData } from "@/lib/vehicles";
-import { fetchVehicles, saveVehicle, deleteVehicle } from "@/lib/vehicles";
+import { fetchVehicles, saveVehicle, deleteVehicle, updateVehicleStatus } from "@/lib/vehicles";
 import { MAKES, getModelsForMake, ENERGY_TYPES, TRANSMISSION_TYPES, VEHICLE_TYPES, DOOR_COUNTS, SEAT_COUNTS, CONDITION_TYPES, CRIT_AIR_STICKERS } from "@/lib/cars-data";
 
-const STATUSES = ["En ligne", "En préparation", "Réservé", "Vendu"];
+const STATUSES = ["En ligne", "Brouillon", "En préparation", "Réservé", "Vendu"];
 const BADGES = ["", "Coup de cœur", "Nouveau", "Exclusif"];
 
 interface FormState {
@@ -110,6 +110,25 @@ export default function InventoryAdmin() {
 
   const handleDelete = (id: string) => { deleteVehicle(id).then(refreshVehicles); setShowDeleteConfirm(null); };
 
+  const handleDuplicate = (v: VehicleData) => {
+    setEditing(null);
+    setForm({
+      make: v.make, model: v.model, finition: v.finition || "", year: String(v.year), firstRegDate: v.firstRegDate || "",
+      price: String(v.price), mileage: String(v.mileage), fuel: v.fuel, transmission: v.transmission,
+      vehicleType: v.vehicleType || "", critAir: String(v.critAir), color: v.color, doors: String(v.doors), seats: String(v.seats),
+      power: v.power, powerFiscal: v.powerFiscal || "", consumption: v.consumption, co2: v.co2, condition: v.condition || "",
+      badge: v.badge || "", status: v.status || "En ligne",
+      options: (v.options || []).join("\n"), videoUrl: v.videoUrl || "",
+      images: v.images,
+    });
+    setShowModal(true);
+    fileInputRef.current && (fileInputRef.current.value = "");
+  };
+
+  const handleQuickStatus = (id: string, status: string) => {
+    updateVehicleStatus(id, status).then(refreshVehicles);
+  };
+
   const filtered = vehicles.filter((v) => {
     const q = search.toLowerCase();
     return (!q || `${v.make} ${v.model}`.toLowerCase().includes(q)) && (filterStatus === "Tous les statuts" || v.status === filterStatus);
@@ -199,12 +218,23 @@ export default function InventoryAdmin() {
                   <td className="px-6 py-4 font-medium" style={{ color: "var(--text-primary)" }}>{vehicle.price.toLocaleString("fr-FR")} €</td>
                   <td className="px-6 py-4" style={{ color: "var(--text-secondary)" }}>{vehicle.mileage.toLocaleString("fr-FR")} km</td>
                   <td className="px-6 py-4" style={{ color: "var(--text-secondary)" }}>{vehicle.year}</td>
-                  <td className="px-6 py-4"><StatutBadge status={vehicle.status || "En ligne"} /></td>
+                  <td className="px-6 py-4">
+                    <select value={vehicle.status || "En ligne"} onChange={(e) => handleQuickStatus(vehicle.id, e.target.value)}
+                      className="text-xs font-medium rounded-full px-2.5 py-1 border cursor-pointer focus:outline-none"
+                      style={{
+                        backgroundColor: `var(--color-${{ "En ligne": "green", "Réservé": "orange", "En préparation": "gray", Vendu: "red", Brouillon: "slate" }[vehicle.status || "En ligne"]}-100)`,
+                        color: `var(--color-${{ "En ligne": "green", "Réservé": "orange", "En préparation": "gray", Vendu: "red", Brouillon: "slate" }[vehicle.status || "En ligne"]}-600)`,
+                        borderColor: `var(--color-${{ "En ligne": "green", "Réservé": "orange", "En préparation": "gray", Vendu: "red", Brouillon: "slate" }[vehicle.status || "En ligne"]}-200)`,
+                      }}>
+                      {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </td>
                   <td className="px-6 py-4"><div className="flex items-center gap-1"><Eye className="h-4 w-4" style={{ color: "var(--text-muted)" }} />{vehicle.views || 0}</div></td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => openEdit(vehicle)} className="p-2 rounded-lg transition-colors" style={{ color: "var(--text-muted)" }}><Edit className="h-4 w-4" /></button>
-                      <button onClick={() => setShowDeleteConfirm(vehicle.id)} className="p-2 rounded-lg transition-colors" style={{ color: "#ef4444" }}><Trash2 className="h-4 w-4" /></button>
+                    <div className="flex items-center justify-end gap-1">
+                      <button onClick={() => openEdit(vehicle)} className="p-2 rounded-lg transition-colors" style={{ color: "var(--text-muted)" }} title="Modifier"><Edit className="h-4 w-4" /></button>
+                      <button onClick={() => handleDuplicate(vehicle)} className="p-2 rounded-lg transition-colors" style={{ color: "var(--text-muted)" }} title="Dupliquer"><Copy className="h-4 w-4" /></button>
+                      <button onClick={() => setShowDeleteConfirm(vehicle.id)} className="p-2 rounded-lg transition-colors" style={{ color: "#ef4444" }} title="Supprimer"><Trash2 className="h-4 w-4" /></button>
                     </div>
                   </td>
                 </tr>

@@ -30,7 +30,7 @@ export function ViewsChart({ dailyStats }: { dailyStats: Record<string, { views?
   }));
 
   return (
-    <div className="h-[300px] w-full">
+    <div className="h-[300px] w-full min-h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={viewData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={borderColor} vertical={false} />
@@ -70,7 +70,7 @@ export function LeadsChart({ dailyStats }: { dailyStats: Record<string, { callba
 
   if (leadData.length === 0) {
     return (
-      <div className="h-[300px] w-full">
+      <div className="h-[300px] w-full min-h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={[{ name: "S1", leads: 0 }]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={borderColor} vertical={false} />
@@ -85,7 +85,7 @@ export function LeadsChart({ dailyStats }: { dailyStats: Record<string, { callba
   }
 
   return (
-    <div className="h-[300px] w-full">
+    <div className="h-[300px] w-full min-h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={leadData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={borderColor} vertical={false} />

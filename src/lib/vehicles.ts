@@ -72,6 +72,21 @@ export async function saveVehicle(vehicle: VehicleData): Promise<boolean> {
   }
 }
 
+export async function updateVehicleStatus(id: string, status: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/vehicles/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (!res.ok) return false;
+    await fetchVehicles();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function deleteVehicle(id: string): Promise<boolean> {
   try {
     const res = await fetch(`/api/vehicles/${encodeURIComponent(id)}`, { method: "DELETE" });

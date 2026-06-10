@@ -5,10 +5,6 @@ export async function GET() {
   const supabaseAdmin = getSupabaseAdmin();
   const { data, error } = await supabaseAdmin.from("vehicles").select("*").order("created_at", { ascending: false });
   if (error) return NextResponse.json({ data: [], error: error.message }, { status: 500 });
-  for (const v of data) {
-    if (v.images && Array.isArray(v.images)) v.images = v.images;
-    if (v.options && Array.isArray(v.options)) v.options = v.options;
-  }
   return NextResponse.json({ data });
 }
 
@@ -28,8 +24,8 @@ export async function POST(req: Request) {
       condition: body.condition || null, finition: body.finition || null,
       first_reg_date: body.firstRegDate || null, badge: body.badge || null,
       status: body.status || "En ligne", video_url: body.videoUrl || null,
-      images: JSON.stringify(body.images || []),
-      options: JSON.stringify(body.options || []),
+      images: body.images || [],
+      options: body.options || [],
       views: body.views || 0,
     };
     const { data, error } = await supabaseAdmin.from("vehicles").upsert(vehicle, { onConflict: "id" }).select().single();
