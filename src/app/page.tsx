@@ -124,26 +124,20 @@ export default function CataloguePage() {
             )}
           </div>
           {showFilters && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 mt-3 pt-3 border-t" style={{ borderColor: "var(--border-primary)" }}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-3 pt-3 border-t" style={{ borderColor: "var(--border-primary)" }}>
               <SelectBox value={make} onChange={handleMakeChange}>{MAKES.map((m) => <option key={m} value={m}>{m || "Marques"}</option>)}</SelectBox>
               <SelectBox value={model} onChange={setModel}>{availableModels.map((m) => <option key={m} value={m}>{m || "Modèles"}</option>)}</SelectBox>
-              <div className="col-span-2 sm:col-span-3 lg:col-span-2">
-                <div className="text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
-                  Budget
-                </div>
-                <div className="flex items-center gap-2">
-                  <input type="number" min={PRICE_MIN} max={priceMax} value={priceMin}
-                    onChange={(e) => setPriceMin(Math.max(PRICE_MIN, Math.min(Number(e.target.value) || 0, priceMax)))}
-                    placeholder="Min €"
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
-                    style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
-                  <span className="text-xs" style={{ color: "var(--text-muted)" }}>—</span>
-                  <input type="number" min={priceMin} max={PRICE_MAX} value={priceMax}
-                    onChange={(e) => setPriceMax(Math.max(Number(e.target.value) || 0, priceMin))}
-                    placeholder="Max €"
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
-                    style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
-                </div>
+              <div>
+                <input type="number" min={PRICE_MIN} max={priceMax} value={priceMin}
+                  onChange={(e) => setPriceMin(Math.max(PRICE_MIN, Math.min(Number(e.target.value) || 0, priceMax)))}
+                  placeholder="Prix minimum"
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition mb-1.5"
+                  style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
+                <input type="number" min={priceMin} max={PRICE_MAX} value={priceMax}
+                  onChange={(e) => setPriceMax(Math.max(Number(e.target.value) || 0, priceMin))}
+                  placeholder="Prix maximum"
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
+                  style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
               </div>
               <SelectBox value={kmRange.label} onChange={(v) => setKmRange(KM_RANGES.find((k) => k.label === v) || KM_RANGES[0])}>{KM_RANGES.map((k) => <option key={k.label} value={k.label}>{k.label}</option>)}</SelectBox>
               <SelectBox value={transmission} onChange={setTransmission}>{TRANSMISSIONS.map((t) => <option key={t} value={t}>{t || "Boîtes"}</option>)}</SelectBox>

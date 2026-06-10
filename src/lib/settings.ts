@@ -12,6 +12,7 @@ export interface AppSettings {
   phone: string;
   email: string;
   address: string;
+  hours: string;
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -28,6 +29,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   phone: "",
   email: "",
   address: "",
+  hours: "Lun – Ven : 9h00 – 19h00\nSamedi : 10h00 – 17h00",
 };
 
 export function getSettings(): AppSettings {

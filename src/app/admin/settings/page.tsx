@@ -218,6 +218,13 @@ export default function SettingsPage() {
                   className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
                   style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
               </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Horaires</label>
+                <textarea rows={3} value={settings.hours} onChange={(e) => setSettings({ ...settings, hours: e.target.value })}
+                  placeholder="Lun – Ven : 9h00 – 19h00&#10;Samedi : 10h00 – 17h00"
+                  className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition resize-none"
+                  style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
+              </div>
             </div>
           </div>
         )}

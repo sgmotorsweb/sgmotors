@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Car, MapPin, Phone, Mail, MessageCircle } from "lucide-react";
+import { Car, MapPin, Phone, Mail, Clock } from "lucide-react";
 import type { AppSettings } from "@/lib/settings";
 import { getSettings } from "@/lib/settings";
 
@@ -72,7 +72,7 @@ export default function Footer() {
   const s = settings || {
     facebook: "", instagram: "", youtube: "", tiktok: "", twitter: "",
     linkedin: "", snapchat: "", pinterest: "", whatsapp: "",
-    phone: "", email: "", address: "",
+    phone: "", email: "", address: "", hours: "",
   } as AppSettings;
 
   const socialLinks = [
@@ -96,7 +96,7 @@ export default function Footer() {
               <span className="font-bold text-2xl tracking-tight">SG MOTORS</span>
             </Link>
             <p style={{ color: "var(--text-muted)" }} className="text-sm mb-6">
-              L&apos;excellence automobile au service de votre passion. Conseil, achat et vente de véhicules premium et sportifs.
+              L&apos;excellence automobile au service de votre passion. Conseil, achat et vente de véhicules adaptés à votre budget.
             </p>
             <div className="flex gap-4">
               {socialLinks.filter((l) => l.url).map((l) => (
@@ -142,6 +142,10 @@ export default function Footer() {
               <li className="flex items-center gap-3">
                 <Mail className="h-5 w-5 shrink-0" style={{ color: "var(--color-sg-accent-blue)" }} />
                 <a href={`mailto:${s.email}`} className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>{s.email}</a>
+              </li>
+              <li className="flex items-start gap-3">
+                <Clock className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--color-sg-accent-blue)" }} />
+                <span className="text-sm whitespace-pre-line" style={{ color: "var(--text-muted)" }}>{s.hours}</span>
               </li>
             </ul>
           </div>

@@ -5,7 +5,7 @@ import { Phone, Mail, MapPin, Clock, CheckCircle, Send } from "lucide-react";
 import { getSettings } from "@/lib/settings";
 
 export default function ContactPage() {
-  const [settings, setSettings] = useState({ phone: "", email: "", address: "" });
+  const [settings, setSettings] = useState({ phone: "", email: "", address: "", hours: "" });
   const [form, setForm] = useState({ nom: "", prenom: "", email: "", telephone: "", sujet: "", message: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -13,7 +13,7 @@ export default function ContactPage() {
 
   useEffect(() => {
     const s = getSettings();
-    setSettings({ phone: s.phone || "", email: s.email || "", address: s.address || "" });
+    setSettings({ phone: s.phone || "", email: s.email || "", address: s.address || "", hours: s.hours || "" });
   }, []);
 
   const validate = () => {
@@ -115,7 +115,7 @@ export default function ContactPage() {
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--badge-bg)" }}><Clock className="h-5 w-5" style={{ color: "var(--color-sg-accent-blue)" }} /></div>
                   <div>
                     <p className="font-medium text-sm" style={{ color: "var(--text-primary)" }}>Horaires</p>
-                    <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>Lun – Ven : 9h00 – 19h00<br />Samedi : 10h00 – 17h00</p>
+                    <p className="text-sm mt-0.5 whitespace-pre-line" style={{ color: "var(--text-muted)" }}>{settings.hours}</p>
                   </div>
                 </li>
               </ul>
