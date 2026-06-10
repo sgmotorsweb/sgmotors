@@ -65,6 +65,9 @@ ALTER TABLE daily_stats ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "anon_read_settings" ON settings FOR SELECT USING (true);
 CREATE POLICY "anon_read_vehicles" ON vehicles FOR SELECT USING (true);
 CREATE POLICY "anon_read_daily_stats" ON daily_stats FOR SELECT USING (true);
+-- Allow anon write for settings (admin saves via API)
+CREATE POLICY "anon_write_settings" ON settings FOR INSERT WITH CHECK (true);
+CREATE POLICY "anon_update_settings" ON settings FOR UPDATE USING (true);
 -- Allow anon insert for messages (visitors submit forms)
 CREATE POLICY "anon_insert_messages" ON messages FOR INSERT WITH CHECK (true);
 
