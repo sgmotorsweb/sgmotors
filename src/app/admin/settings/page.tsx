@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Settings, Globe, Phone, Key, Save, CheckCircle } from "lucide-react";
-import { getSettings, saveSettings, type AppSettings } from "@/lib/settings";
+import { fetchServerSettings, saveSettings, type AppSettings } from "@/lib/settings";
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -15,7 +15,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<"general" | "social" | "contact">("general");
 
   useEffect(() => {
-    setSettings(getSettings());
+    fetchServerSettings().then(setSettings);
   }, []);
 
   const handleSave = () => {

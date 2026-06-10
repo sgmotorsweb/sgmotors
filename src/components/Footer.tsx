@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Car, MapPin, Phone, Mail, Clock } from "lucide-react";
 import type { AppSettings } from "@/lib/settings";
-import { getSettings } from "@/lib/settings";
+import { fetchServerSettings } from "@/lib/settings";
 
 const IconInstagram = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
@@ -66,7 +66,7 @@ export default function Footer() {
   const pathname = usePathname();
 
   useEffect(() => {
-    setSettings(getSettings());
+    fetchServerSettings().then(setSettings);
   }, [pathname]);
 
   const s = settings || {
@@ -133,19 +133,19 @@ export default function Footer() {
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--color-sg-accent-blue)" }} />
-                <span className="text-sm" style={{ color: "var(--text-muted)" }}>{s.address}</span>
+                <span className="text-sm" style={{ color: "var(--text-muted)" }}>{s.address || "—"}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="h-5 w-5 shrink-0" style={{ color: "var(--color-sg-accent-blue)" }} />
-                <a href={`tel:${s.phone.replace(/\s/g, "")}`} className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>{s.phone}</a>
+                <a href={`tel:${s.phone.replace(/\s/g, "")}`} className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>{s.phone || "—"}</a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="h-5 w-5 shrink-0" style={{ color: "var(--color-sg-accent-blue)" }} />
-                <a href={`mailto:${s.email}`} className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>{s.email}</a>
+                <a href={`mailto:${s.email}`} className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>{s.email || "—"}</a>
               </li>
               <li className="flex items-start gap-3">
                 <Clock className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--color-sg-accent-blue)" }} />
-                <span className="text-sm whitespace-pre-line" style={{ color: "var(--text-muted)" }}>{s.hours}</span>
+                <span className="text-sm whitespace-pre-line" style={{ color: "var(--text-muted)" }}>{s.hours || "—"}</span>
               </li>
             </ul>
           </div>

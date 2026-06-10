@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Phone, Mail, MapPin, Clock, CheckCircle, Send } from "lucide-react";
-import { getSettings } from "@/lib/settings";
+import { fetchServerSettings } from "@/lib/settings";
 
 export default function ContactPage() {
   const [settings, setSettings] = useState({ phone: "", email: "", address: "", hours: "" });
@@ -12,8 +12,9 @@ export default function ContactPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const s = getSettings();
-    setSettings({ phone: s.phone || "", email: s.email || "", address: s.address || "", hours: s.hours || "" });
+    fetchServerSettings().then((s) => {
+      setSettings({ phone: s.phone || "", email: s.email || "", address: s.address || "", hours: s.hours || "" });
+    });
   }, []);
 
   const validate = () => {
@@ -94,35 +95,35 @@ export default function ContactPage() {
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--badge-bg)" }}><MapPin className="h-5 w-5" style={{ color: "var(--color-sg-accent-blue)" }} /></div>
                   <div>
                     <p className="font-medium text-sm" style={{ color: "var(--text-primary)" }}>Adresse</p>
-                    <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>{settings.address.split("\n").map((l, i) => <span key={i}>{l}{i < settings.address.split("\n").length - 1 && <br />}</span>)}</p>
+                    <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>{settings.address ? settings.address.split("\n").map((l, i) => <span key={i}>{l}{i < settings.address.split("\n").length - 1 && <br />}</span>) : "—"}</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--badge-bg)" }}><Phone className="h-5 w-5" style={{ color: "var(--color-sg-accent-blue)" }} /></div>
                   <div>
                     <p className="font-medium text-sm" style={{ color: "var(--text-primary)" }}>Téléphone</p>
-                    <a href={`tel:${settings.phone.replace(/\s/g, "")}`} className="text-sm mt-0.5 transition-colors" style={{ color: "var(--text-muted)" }}>{settings.phone}</a>
+                    {settings.phone ? <a href={`tel:${settings.phone.replace(/\s/g, "")}`} className="text-sm mt-0.5 transition-colors" style={{ color: "var(--text-muted)" }}>{settings.phone}</a> : <span className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>—</span>}
                   </div>
                 </li>
                 <li className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--badge-bg)" }}><Mail className="h-5 w-5" style={{ color: "var(--color-sg-accent-blue)" }} /></div>
                   <div>
                     <p className="font-medium text-sm" style={{ color: "var(--text-primary)" }}>E-mail</p>
-                    <a href={`mailto:${settings.email}`} className="text-sm mt-0.5 transition-colors" style={{ color: "var(--text-muted)" }}>{settings.email}</a>
+                    {settings.email ? <a href={`mailto:${settings.email}`} className="text-sm mt-0.5 transition-colors" style={{ color: "var(--text-muted)" }}>{settings.email}</a> : <span className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>—</span>}
                   </div>
                 </li>
                 <li className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: "var(--badge-bg)" }}><Clock className="h-5 w-5" style={{ color: "var(--color-sg-accent-blue)" }} /></div>
                   <div>
                     <p className="font-medium text-sm" style={{ color: "var(--text-primary)" }}>Horaires</p>
-                    <p className="text-sm mt-0.5 whitespace-pre-line" style={{ color: "var(--text-muted)" }}>{settings.hours}</p>
+                    <p className="text-sm mt-0.5 whitespace-pre-line" style={{ color: "var(--text-muted)" }}>{settings.hours || "—"}</p>
                   </div>
                 </li>
               </ul>
             </div>
-            <a href={`tel:${settings.phone.replace(/\s/g, "")}`} className="flex items-center justify-center gap-3 w-full py-4 text-white rounded-xl font-bold transition-colors shadow-lg" style={{ backgroundColor: "var(--color-sg-accent-blue)" }}>
+            {settings.phone && <a href={`tel:${settings.phone.replace(/\s/g, "")}`} className="flex items-center justify-center gap-3 w-full py-4 text-white rounded-xl font-bold transition-colors shadow-lg" style={{ backgroundColor: "var(--color-sg-accent-blue)" }}>
               <Phone className="h-5 w-5" /> Appeler maintenant
-            </a>
+            </a>}
           </div>
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="border rounded-2xl p-8 space-y-5" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }} noValidate>

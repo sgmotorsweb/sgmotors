@@ -12,9 +12,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SG MOTORS | Conseil • Achat • Vente de véhicules premium",
+  title: "SG MOTORS | Conseil • Achat • Vente de véhicules",
   description:
-    "SG MOTORS — Votre spécialiste de l'achat, la vente et le conseil automobile. Découvrez notre catalogue de véhicules premium sélectionnés avec soin.",
+    "SG MOTORS — Votre spécialiste de l'achat, la vente et le conseil automobile. Découvrez notre catalogue de véhicules sélectionnés avec soin.",
 };
 
 export default function RootLayout({

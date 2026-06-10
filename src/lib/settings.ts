@@ -15,7 +15,7 @@ export interface AppSettings {
   hours: string;
 }
 
-const DEFAULT_SETTINGS: AppSettings = {
+const STATIC_DEFAULTS: AppSettings = {
   password: "sgmotors2024",
   facebook: "",
   instagram: "",
@@ -32,21 +32,37 @@ const DEFAULT_SETTINGS: AppSettings = {
   hours: "Lun – Ven : 9h00 – 19h00\nSamedi : 10h00 – 17h00",
 };
 
+export async function fetchServerSettings(): Promise<AppSettings> {
+  try {
+    const res = await fetch("/api/settings");
+    if (res.ok) {
+      const data = await res.json();
+      return { ...STATIC_DEFAULTS, ...data };
+    }
+  } catch {}
+  return getSettings();
+}
+
 export function getSettings(): AppSettings {
-  if (typeof window === "undefined") return { ...DEFAULT_SETTINGS };
+  if (typeof window === "undefined") return { ...STATIC_DEFAULTS };
   try {
     const stored = localStorage.getItem("sgmotors_settings");
     if (stored) {
       const parsed = JSON.parse(stored);
-      return { ...DEFAULT_SETTINGS, ...parsed };
+      return { ...STATIC_DEFAULTS, ...parsed };
     }
   } catch {}
-  return { ...DEFAULT_SETTINGS };
+  return { ...STATIC_DEFAULTS };
 }
 
 export function saveSettings(s: AppSettings): void {
   if (typeof window === "undefined") return;
   localStorage.setItem("sgmotors_settings", JSON.stringify(s));
+  fetch("/api/settings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(s),
+  }).catch(() => {});
 }
 
 export function verifyPassword(password: string): boolean {

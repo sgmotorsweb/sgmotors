@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Menu, X, Phone, Sun, Moon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
-import { getSettings } from "@/lib/settings";
+import { fetchServerSettings } from "@/lib/settings";
 
 const navLinks = [
   { href: "/", label: "Catalogue" },
@@ -23,8 +23,9 @@ export default function Header() {
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
-    const s = getSettings();
-    if (s.phone) setPhone(s.phone.replace(/\s/g, ""));
+    fetchServerSettings().then((s) => {
+      if (s.phone) setPhone(s.phone.replace(/\s/g, ""));
+    });
   }, [pathname]);
 
   return (
@@ -34,9 +35,9 @@ export default function Header() {
           <Image
             src="/logo.png"
             alt="SG MOTORS"
-            width={160}
-            height={60}
-            className="h-14 w-auto object-contain"
+            width={200}
+            height={75}
+            className="h-18 md:h-20 w-auto object-contain"
             priority
           />
         </Link>
