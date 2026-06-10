@@ -4,6 +4,11 @@ import type { VehicleData } from "./vehicles";
 function normalize(v: any) {
   if (typeof v.options === "string") { try { v.options = JSON.parse(v.options); } catch { v.options = []; } }
   if (typeof v.images === "string") { try { v.images = JSON.parse(v.images); } catch { v.images = []; } }
+  v.vehicleType = v.vehicleType ?? v.vehicle_type ?? null;
+  v.critAir = v.critAir ?? v.crit_air ?? 1;
+  v.powerFiscal = v.powerFiscal ?? v.power_fiscal ?? null;
+  v.firstRegDate = v.firstRegDate ?? v.first_reg_date ?? null;
+  v.videoUrl = v.videoUrl ?? v.video_url ?? null;
   return v as VehicleData;
 }
 

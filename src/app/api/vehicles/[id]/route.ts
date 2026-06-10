@@ -8,6 +8,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (error) return NextResponse.json({ data: null, error: error.message }, { status: 404 });
   if (typeof data.options === "string") { try { data.options = JSON.parse(data.options); } catch { data.options = []; } }
   if (typeof data.images === "string") { try { data.images = JSON.parse(data.images); } catch { data.images = []; } }
+  data.vehicleType = data.vehicleType ?? data.vehicle_type ?? null;
+  data.critAir = data.critAir ?? data.crit_air ?? 1;
+  data.powerFiscal = data.powerFiscal ?? data.power_fiscal ?? null;
+  data.firstRegDate = data.firstRegDate ?? data.first_reg_date ?? null;
+  data.videoUrl = data.videoUrl ?? data.video_url ?? null;
   return NextResponse.json({ data });
 }
 
