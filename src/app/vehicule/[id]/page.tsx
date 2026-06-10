@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Settings, CheckCircle, ArrowLeft, Fuel, Gauge, Cog, Calendar, Palette, ClipboardList } from "lucide-react";
+import { Settings, CheckCircle, ArrowLeft, Fuel, Gauge, Cog, Calendar, Palette, ClipboardList, Award, CarFront } from "lucide-react";
 import ContactButtons, { MobileContactBar, FinanceContact } from "./ContactButtons";
 import StatsTracker from "./StatsTracker";
 import VehicleGallery from "@/components/VehicleGallery";
@@ -72,7 +72,7 @@ export default async function VehiculeDetail({ params }: { params: Promise<{ id:
             <div className="lg:col-span-2 space-y-8">
               <VehicleGallery images={vehicle.images} make={vehicle.make} model={vehicle.model} year={vehicle.year} />
               <div className="block lg:hidden">
-                <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>{vehicle.year} {vehicle.make} {vehicle.model}</h1>
+                <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>{vehicle.year} {vehicle.make} {vehicle.model} {vehicle.badge && <span className="inline-block ml-2 px-3 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: "var(--color-sg-accent-blue)", color: "#fff" }}>{vehicle.badge}</span>}</h1>
                 <p className="text-3xl font-bold mb-2" style={{ color: "var(--color-sg-accent-cyan)" }} itemProp="offers" itemScope itemType="https://schema.org/Offer">
                   <span itemProp="price" content={String(vehicle.price)}>{vehicle.price.toLocaleString("fr-FR")}</span> <span itemProp="priceCurrency" content="EUR">€</span>
                 </p>
@@ -88,7 +88,23 @@ export default async function VehiculeDetail({ params }: { params: Promise<{ id:
                   <Settings className="h-5 w-5" style={{ color: "var(--color-sg-accent-blue)" }} aria-hidden="true" /> Caractéristiques techniques
                 </h2>
                 <dl className="grid grid-cols-2 sm:grid-cols-3 gap-y-5 gap-x-4">
-                  {[{ icon: Calendar, label: "Année", value: String(vehicle.year) }, { icon: Gauge, label: "Kilométrage", value: `${vehicle.mileage.toLocaleString("fr-FR")} km` }, { icon: Fuel, label: "Carburant", value: vehicle.fuel }, { icon: Cog, label: "Boîte", value: vehicle.transmission }, { icon: Palette, label: "Couleur", value: vehicle.color }, { icon: Cog, label: "Puissance", value: vehicle.power }, { icon: Cog, label: "Consommation", value: vehicle.consumption }, { icon: Cog, label: "CO₂", value: vehicle.co2 }, { icon: Cog, label: "Crit'Air", value: String(vehicle.critAir) }, { icon: Cog, label: "Portes", value: String(vehicle.doors) }, { icon: Cog, label: "Places", value: String(vehicle.seats) }].map(({ icon: Icon, label, value }) => (
+                  {[
+                    vehicle.finition && { icon: Award, label: "Finition", value: vehicle.finition },
+                    vehicle.firstRegDate && { icon: Calendar, label: "1re mise en circ.", value: vehicle.firstRegDate },
+                    { icon: Gauge, label: "Kilométrage", value: `${vehicle.mileage.toLocaleString("fr-FR")} km` },
+                    { icon: Fuel, label: "Carburant", value: vehicle.fuel },
+                    { icon: Cog, label: "Boîte", value: vehicle.transmission },
+                    vehicle.vehicleType && { icon: CarFront, label: "Type", value: vehicle.vehicleType },
+                    vehicle.color && { icon: Palette, label: "Couleur", value: vehicle.color },
+                    vehicle.power && { icon: Cog, label: "Puissance DIN", value: vehicle.power },
+                    vehicle.powerFiscal && { icon: Cog, label: "Puiss. fiscale", value: `${vehicle.powerFiscal} CV` },
+                    vehicle.consumption && { icon: Cog, label: "Consommation", value: vehicle.consumption },
+                    vehicle.co2 && { icon: Cog, label: "CO₂", value: vehicle.co2 },
+                    { icon: Cog, label: "Crit'Air", value: String(vehicle.critAir) },
+                    { icon: Cog, label: "Portes", value: String(vehicle.doors) },
+                    { icon: Cog, label: "Places", value: String(vehicle.seats) },
+                    vehicle.condition && { icon: ClipboardList, label: "État", value: vehicle.condition },
+                  ].filter(Boolean).map(({ icon: Icon, label, value }: any) => (
                     <div key={label} className="flex items-center gap-3">
                       <Icon className="h-5 w-5 shrink-0" style={{ color: "var(--color-sg-accent-blue)" }} aria-hidden="true" />
                       <div><dt className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</dt><dd className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{value}</dd></div>
@@ -138,7 +154,7 @@ export default async function VehiculeDetail({ params }: { params: Promise<{ id:
             <aside className="space-y-6" aria-label="Actions et financement">
               <div className="sticky top-32 space-y-6">
                 <div className="hidden lg:block border rounded-xl p-6" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }}>
-                  <h1 className="text-2xl font-bold mb-2 leading-tight" style={{ color: "var(--text-primary)" }}>{vehicle.year} {vehicle.make} <br/>{vehicle.model}</h1>
+                  <h1 className="text-2xl font-bold mb-2 leading-tight" style={{ color: "var(--text-primary)" }}>{vehicle.year} {vehicle.make} <br/>{vehicle.model} {vehicle.badge && <span className="inline-block ml-2 px-3 py-1 rounded-full text-xs font-bold" style={{ backgroundColor: "var(--color-sg-accent-blue)", color: "#fff" }}>{vehicle.badge}</span>}</h1>
                   <p className="text-4xl font-bold my-4" style={{ color: "var(--text-primary)" }} itemProp="offers" itemScope itemType="https://schema.org/Offer">
                     <span itemProp="price" content={String(vehicle.price)}>{vehicle.price.toLocaleString("fr-FR")}</span> <span itemProp="priceCurrency" content="EUR">€</span>
                   </p>
