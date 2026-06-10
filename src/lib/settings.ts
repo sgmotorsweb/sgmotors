@@ -36,8 +36,8 @@ export async function fetchServerSettings(): Promise<AppSettings> {
   try {
     const res = await fetch("/api/settings");
     if (res.ok) {
-      const data = await res.json();
-      return { ...STATIC_DEFAULTS, ...data };
+      const json = await res.json();
+      return { ...STATIC_DEFAULTS, ...json.data };
     }
   } catch {}
   return getSettings();
