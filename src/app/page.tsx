@@ -7,15 +7,8 @@ import { Search, Gauge, Fuel, Cog, X, ArrowRight, ChevronDown, SlidersHorizontal
 import { getVehicles } from "@/lib/vehicles";
 import type { VehicleData } from "@/lib/vehicles";
 
-const PRICE_RANGES = [
-  { label: "Tous budgets", min: 0, max: Infinity },
-  { label: "< 50 000 €", min: 0, max: 50000 },
-  { label: "50 000 – 80 000 €", min: 50000, max: 80000 },
-  { label: "80 000 – 120 000 €", min: 80000, max: 120000 },
-  { label: "120 000 – 180 000 €", min: 120000, max: 180000 },
-  { label: "180 000 – 250 000 €", min: 180000, max: 250000 },
-  { label: "> 250 000 €", min: 250000, max: Infinity },
-];
+const PRICE_MIN = 0;
+const PRICE_MAX = 200000;
 const currentYear = new Date().getFullYear();
 const YEARS = ["Toutes années", ...Array.from({ length: currentYear - 1999 }, (_, i) => String(currentYear - i))];
 const KM_RANGES = [
@@ -55,7 +48,8 @@ export default function CataloguePage() {
   const [make, setMake] = useState("Toutes marques");
   const [model, setModel] = useState("Tous modèles");
   const [transmission, setTransmission] = useState("Toutes boîtes");
-  const [priceRange, setPriceRange] = useState(PRICE_RANGES[0]);
+  const [priceMin, setPriceMin] = useState(PRICE_MIN);
+  const [priceMax, setPriceMax] = useState(PRICE_MAX);
   const [kmRange, setKmRange] = useState(KM_RANGES[0]);
   const [year, setYear] = useState("Toutes années");
   const [sort, setSort] = useState<SortOption>("price_asc");
@@ -75,9 +69,9 @@ export default function CataloguePage() {
 
   const handleMakeChange = (val: string) => { setMake(val); setModel("Tous modèles"); };
 
-  const activeFilterCount = [make !== "Toutes marques", model !== "Tous modèles", transmission !== "Toutes boîtes", priceRange.label !== "Tous budgets", kmRange.label !== "Tous km", year !== "Toutes années"].filter(Boolean).length;
+  const activeFilterCount = [make !== "Toutes marques", model !== "Tous modèles", transmission !== "Toutes boîtes", priceMin > PRICE_MIN || priceMax < PRICE_MAX, kmRange.label !== "Tous km", year !== "Toutes années"].filter(Boolean).length;
 
-  const clearFilters = () => { setSearch(""); setMake("Toutes marques"); setModel("Tous modèles"); setTransmission("Toutes boîtes"); setPriceRange(PRICE_RANGES[0]); setKmRange(KM_RANGES[0]); setYear("Toutes années"); setSort("price_asc"); };
+  const clearFilters = () => { setSearch(""); setMake("Toutes marques"); setModel("Tous modèles"); setTransmission("Toutes boîtes"); setPriceMin(PRICE_MIN); setPriceMax(PRICE_MAX); setKmRange(KM_RANGES[0]); setYear("Toutes années"); setSort("price_asc"); };
 
   const filtered = useMemo(() => {
     let results = vehicles.filter((v) => {
@@ -86,13 +80,13 @@ export default function CataloguePage() {
         (make === "Toutes marques" || v.make === make) &&
         (model === "Tous modèles" || v.model === model) &&
         (transmission === "Toutes boîtes" || v.transmission === transmission) &&
-        v.price >= priceRange.min && v.price <= priceRange.max &&
+        v.price >= priceMin && v.price <= priceMax &&
         v.mileage <= kmRange.max &&
         (year === "Toutes années" || String(v.year) === year);
     });
     results.sort((a, b) => { if (sort === "price_asc") return a.price - b.price; if (sort === "price_desc") return b.price - a.price; if (sort === "mileage_asc") return a.mileage - b.mileage; return b.year - a.year; });
     return results;
-  }, [search, make, model, transmission, priceRange, kmRange, year, sort, vehicles]);
+  }, [search, make, model, transmission, priceMin, priceMax, kmRange, year, sort, vehicles]);
 
   return (
     <div className="flex flex-col flex-1 bg-primary">
@@ -130,10 +124,26 @@ export default function CataloguePage() {
             )}
           </div>
           {showFilters && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-3 pt-3 border-t" style={{ borderColor: "var(--border-primary)" }}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 mt-3 pt-3 border-t" style={{ borderColor: "var(--border-primary)" }}>
               <SelectBox value={make} onChange={handleMakeChange}>{MAKES.map((m) => <option key={m} value={m}>{m}</option>)}</SelectBox>
               <SelectBox value={model} onChange={setModel}>{availableModels.map((m) => <option key={m} value={m}>{m}</option>)}</SelectBox>
-              <SelectBox value={priceRange.label} onChange={(v) => setPriceRange(PRICE_RANGES.find((p) => p.label === v) || PRICE_RANGES[0])}>{PRICE_RANGES.map((p) => <option key={p.label} value={p.label}>{p.label}</option>)}</SelectBox>
+              <div className="col-span-2 sm:col-span-3 lg:col-span-2">
+                <div className="text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
+                  Prix : {priceMin.toLocaleString("fr-FR")} € — {priceMax >= PRICE_MAX ? `+${PRICE_MAX.toLocaleString("fr-FR")}` : `${priceMax.toLocaleString("fr-FR")}`} €
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs shrink-0" style={{ color: "var(--text-muted)" }}>{PRICE_MIN.toLocaleString("fr-FR")}€</span>
+                  <input type="range" min={PRICE_MIN} max={PRICE_MAX} step={1000} value={priceMin}
+                    onChange={(e) => setPriceMin(Math.min(Number(e.target.value), priceMax - 1000))}
+                    className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer accent-[var(--color-sg-accent-blue)]"
+                    style={{ backgroundColor: "var(--bg-tertiary)" }} />
+                  <input type="range" min={PRICE_MIN} max={PRICE_MAX} step={1000} value={priceMax}
+                    onChange={(e) => setPriceMax(Math.max(Number(e.target.value), priceMin + 1000))}
+                    className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer accent-[var(--color-sg-accent-blue)]"
+                    style={{ backgroundColor: "var(--bg-tertiary)" }} />
+                  <span className="text-xs shrink-0" style={{ color: "var(--text-muted)" }}>{PRICE_MAX.toLocaleString("fr-FR")}€</span>
+                </div>
+              </div>
               <SelectBox value={kmRange.label} onChange={(v) => setKmRange(KM_RANGES.find((k) => k.label === v) || KM_RANGES[0])}>{KM_RANGES.map((k) => <option key={k.label} value={k.label}>{k.label}</option>)}</SelectBox>
               <SelectBox value={transmission} onChange={setTransmission}>{TRANSMISSIONS.map((t) => <option key={t} value={t}>{t}</option>)}</SelectBox>
               <SelectBox value={year} onChange={setYear}>{YEARS.map((y) => <option key={y} value={y}>{y}</option>)}</SelectBox>
