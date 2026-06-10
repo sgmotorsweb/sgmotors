@@ -1,7 +1,4 @@
-import { Resend } from "resend";
 import { NextResponse } from "next/server";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
   try {
@@ -11,23 +8,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Champs obligatoires manquants" }, { status: 400 });
     }
 
-    const emailContent = `
-      Nouvelle demande de rappel - SG MOTORS
+    if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== "re_placeholder") {
+      const { Resend } = await import("resend");
+      const resend = new Resend(process.env.RESEND_API_KEY);
 
-      Véhicule concerné : ${vehicule || "Non précisé"}
-      Nom : ${nom}
-      Prénom : ${prenom}
-      Téléphone : ${telephone}
-      Email : ${email}
-      Message : ${message || "Aucun message"}
-    `;
+      const emailContent = `
+        Nouvelle demande de rappel - SG MOTORS
 
-    await resend.emails.send({
-      from: "SG MOTORS <noreply@sgmotors13.com>",
-      to: "contact@sgmotors13.com",
-      subject: `Rappel demandé - ${nom} ${prenom}`,
-      text: emailContent,
-    });
+        Véhicule concerné : ${vehicule || "Non précisé"}
+        Nom : ${nom}
+        Prénom : ${prenom}
+        Téléphone : ${telephone}
+        Email : ${email}
+        Message : ${message || "Aucun message"}
+      `;
+
+      await resend.emails.send({
+        from: "SG MOTORS <noreply@sgmotors13.com>",
+        to: "contact@sgmotors13.com",
+        subject: `Rappel demandé - ${nom} ${prenom}`,
+        text: emailContent,
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch {
