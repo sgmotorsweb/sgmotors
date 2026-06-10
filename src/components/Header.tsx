@@ -25,7 +25,7 @@ export default function Header() {
   useEffect(() => {
     const s = getSettings();
     if (s.phone) setPhone(s.phone.replace(/\s/g, ""));
-  }, []);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-50 w-full" style={{ backgroundColor: "var(--bg-secondary)", boxShadow: "var(--shadow-sm)" }}>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Car, MapPin, Phone, Mail, MessageCircle } from "lucide-react";
 import type { AppSettings } from "@/lib/settings";
 import { getSettings } from "@/lib/settings";
@@ -62,10 +63,11 @@ const IconPinterest = () => (
 
 export default function Footer() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     setSettings(getSettings());
-  }, []);
+  }, [pathname]);
 
   const s = settings || {
     facebook: "", instagram: "", youtube: "", tiktok: "", twitter: "",
