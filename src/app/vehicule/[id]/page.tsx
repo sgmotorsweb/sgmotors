@@ -102,9 +102,13 @@ export default async function VehiculeDetail({ params }: { params: Promise<{ id:
                   <h2 className="text-lg font-bold mb-4 pb-3 border-b flex items-center gap-2" style={{ color: "var(--text-primary)", borderColor: "var(--border-primary)" }}>
                     <Settings className="h-5 w-5" style={{ color: "var(--color-sg-accent-blue)" }} /> Vidéo
                   </h2>
-                  <div className="aspect-video rounded-xl overflow-hidden">
-                    <iframe src={vehicle.videoUrl.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/")} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-                  </div>
+                  {vehicle.videoUrl.startsWith("data:") ? (
+                    <video src={vehicle.videoUrl} controls className="w-full rounded-xl" />
+                  ) : (
+                    <div className="aspect-video rounded-xl overflow-hidden">
+                      <iframe src={vehicle.videoUrl.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/")} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                    </div>
+                  )}
                 </section>
               )}
 

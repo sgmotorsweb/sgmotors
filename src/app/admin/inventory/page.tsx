@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Plus, Search, Edit, Trash2, Eye, X, Upload, Copy } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, X, Upload, Copy, Film } from "lucide-react";
 import Image from "next/image";
 import type { VehicleData } from "@/lib/vehicles";
 import { fetchVehicles, saveVehicle, deleteVehicle, updateVehicleStatus } from "@/lib/vehicles";
@@ -60,6 +60,7 @@ export default function InventoryAdmin() {
   const [form, setForm] = useState<FormState>(emptyForm());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const modelsForMake = form.make ? getModelsForMake(form.make) : [];
 
@@ -86,6 +87,18 @@ export default function InventoryAdmin() {
     setForm((prev) => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
   };
 
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm((prev) => ({ ...prev, videoUrl: reader.result as string }));
+    };
+    reader.readAsDataURL(e.target.files[0]);
+    e.target.value = "";
+  };
+
+  const removeVideo = () => setForm((prev) => ({ ...prev, videoUrl: "" }));
+
   const makeModelOptions = (make: string) => {
     const models = getModelsForMake(make);
     if (models.length === 0) return MAKES;
@@ -96,6 +109,7 @@ export default function InventoryAdmin() {
     setEditing(null);
     setForm(emptyForm());
     setShowModal(true);
+    videoInputRef.current && (videoInputRef.current.value = "");
   };
 
   const openEdit = (v: VehicleData) => {
@@ -111,6 +125,7 @@ export default function InventoryAdmin() {
     });
     setShowModal(true);
     fileInputRef.current && (fileInputRef.current.value = "");
+    videoInputRef.current && (videoInputRef.current.value = "");
   };
 
   const handleSave = () => {
@@ -349,9 +364,20 @@ export default function InventoryAdmin() {
 
               <fieldset>
                 <legend className="text-base font-bold mb-4 pb-2 border-b w-full" style={{ color: "var(--text-primary)", borderColor: "var(--border-primary)" }}>
-                  Vidéo
+                  Vidéo <span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>(MP4, WebM — max 50 Mo)</span>
                 </legend>
-                <Input label="URL de la vidéo (YouTube/Vimeo)" val={form.videoUrl} onChange={(v) => setForm({ ...form, videoUrl: v })} placeholder="https://www.youtube.com/watch?v=..." />
+                {form.videoUrl ? (
+                  <div className="relative rounded-xl overflow-hidden border" style={{ borderColor: "var(--border-primary)" }}>
+                    <video src={form.videoUrl} controls className="w-full max-h-[200px] object-contain" />
+                    <button onClick={removeVideo} className="absolute top-2 right-2 w-8 h-8 bg-black/70 rounded-full flex items-center justify-center transition-colors hover:bg-black/90"><X className="h-4 w-4 text-white" /></button>
+                  </div>
+                ) : (
+                  <div onClick={() => videoInputRef.current?.click()} className="border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer" style={{ borderColor: "var(--border-primary)" }}>
+                    <Film className="h-8 w-8 mx-auto mb-2" style={{ color: "var(--text-muted)" }} />
+                    <p className="text-sm" style={{ color: "var(--text-muted)" }}>Cliquer pour ajouter une vidéo</p>
+                  </div>
+                )}
+                <input ref={videoInputRef} type="file" accept="video/mp4,video/webm" className="hidden" onChange={handleVideoUpload} />
               </fieldset>
             </div>
 
