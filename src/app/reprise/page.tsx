@@ -5,6 +5,29 @@ import { Car, Upload, CheckCircle, ArrowRight, X, Film } from "lucide-react";
 
 const MARQUES = ["Alfa Romeo", "Audi", "BMW", "Citroën", "Ferrari", "Fiat", "Ford", "Honda", "Hyundai", "Kia", "Lamborghini", "Land Rover", "Lexus", "Maserati", "Mazda", "Mercedes-Benz", "Mitsubishi", "Nissan", "Peugeot", "Porsche", "Renault", "Seat", "Skoda", "Subaru", "Tesla", "Toyota", "Volkswagen", "Volvo", "Autre"];
 
+const Field = ({ label, name, type = "text", placeholder, required = false, form, errors, handleChange }: { label: string; name: string; type?: string; placeholder?: string; required?: boolean; form: Record<string, string>; errors: Record<string, string>; handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void }) => (
+  <div>
+    <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>{label}{required && <span style={{ color: "var(--color-sg-accent-blue)" }}> *</span>}</label>
+    <input type={type} name={name} value={form[name] || ""} onChange={handleChange} placeholder={placeholder}
+      className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition ${errors[name] ? "border-red-500" : ""}`}
+      style={{ backgroundColor: "var(--bg-primary)", borderColor: errors[name] ? "#ef4444" : "var(--border-primary)", color: "var(--text-primary)" }} />
+    {errors[name] && <p className="mt-1 text-xs text-red-400">{errors[name]}</p>}
+  </div>
+);
+
+const Select = ({ label, name, options, required = false, form, errors, handleChange }: { label: string; name: string; options: string[]; required?: boolean; form: Record<string, string>; errors: Record<string, string>; handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void }) => (
+  <div>
+    <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>{label}{required && <span style={{ color: "var(--color-sg-accent-blue)" }}> *</span>}</label>
+    <select name={name} value={form[name] || ""} onChange={handleChange}
+      className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition cursor-pointer ${errors[name] ? "border-red-500" : ""}`}
+      style={{ backgroundColor: "var(--bg-primary)", borderColor: errors[name] ? "#ef4444" : "var(--border-primary)", color: "var(--text-primary)" }}>
+      <option value="">Choisir…</option>
+      {options.map((o) => <option key={o} value={o}>{o}</option>)}
+    </select>
+    {errors[name] && <p className="mt-1 text-xs text-red-400">{errors[name]}</p>}
+  </div>
+);
+
 export default function ReprisePage() {
   const [step, setStep] = useState(1);
   const [photos, setPhotos] = useState<File[]>([]);
@@ -94,29 +117,6 @@ export default function ReprisePage() {
     setSubmitted(true);
   };
 
-  const Field = ({ label, name, type = "text", placeholder, required = false }: { label: string; name: string; type?: string; placeholder?: string; required?: boolean }) => (
-    <div>
-      <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>{label}{required && <span style={{ color: "var(--color-sg-accent-blue)" }}> *</span>}</label>
-      <input type={type} name={name} value={form[name as keyof typeof form]} onChange={handleChange} placeholder={placeholder}
-        className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition ${errors[name] ? "border-red-500" : ""}`}
-        style={{ backgroundColor: "var(--bg-primary)", borderColor: errors[name] ? "#ef4444" : "var(--border-primary)", color: "var(--text-primary)" }} />
-      {errors[name] && <p className="mt-1 text-xs text-red-400">{errors[name]}</p>}
-    </div>
-  );
-
-  const Select = ({ label, name, options, required = false }: { label: string; name: string; options: string[]; required?: boolean }) => (
-    <div>
-      <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>{label}{required && <span style={{ color: "var(--color-sg-accent-blue)" }}> *</span>}</label>
-      <select name={name} value={form[name as keyof typeof form]} onChange={handleChange}
-        className={`w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition cursor-pointer ${errors[name] ? "border-red-500" : ""}`}
-        style={{ backgroundColor: "var(--bg-primary)", borderColor: errors[name] ? "#ef4444" : "var(--border-primary)", color: "var(--text-primary)" }}>
-        <option value="">Choisir…</option>
-        {options.map((o) => <option key={o} value={o}>{o}</option>)}
-      </select>
-      {errors[name] && <p className="mt-1 text-xs text-red-400">{errors[name]}</p>}
-    </div>
-  );
-
   if (submitted) {
     return (
       <div className="flex flex-col flex-1 bg-primary items-center justify-center py-20 px-4">
@@ -163,16 +163,16 @@ export default function ReprisePage() {
                 <h2 className="font-bold text-xl" style={{ color: "var(--text-primary)" }}>Informations du véhicule</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <Select label="Marque" name="marque" options={MARQUES} required />
-                <Field label="Modèle" name="modele" placeholder="ex : Clio V" required />
+                <Select label="Marque" name="marque" options={MARQUES} required form={form} errors={errors} handleChange={handleChange} />
+                <Field label="Modèle" name="modele" placeholder="ex : Clio V" required form={form} errors={errors} handleChange={handleChange} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <Field label="Année" name="annee" type="number" placeholder={String(new Date().getFullYear())} required />
-                <Field label="Kilométrage" name="kilometrage" type="number" placeholder="ex : 45 000" required />
+                <Field label="Année" name="annee" type="number" placeholder={String(new Date().getFullYear())} required form={form} errors={errors} handleChange={handleChange} />
+                <Field label="Kilométrage" name="kilometrage" type="number" placeholder="ex : 45 000" required form={form} errors={errors} handleChange={handleChange} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <Select label="Carburant" name="carburant" options={["Essence", "Diesel", "Électrique", "Hybride", "GPL"]} required />
-                <Field label="Prix souhaité (€)" name="prixSouhaite" type="number" placeholder="ex : 18 000" />
+                <Select label="Carburant" name="carburant" options={["Essence", "Diesel", "Électrique", "Hybride", "GPL"]} required form={form} errors={errors} handleChange={handleChange} />
+                <Field label="Prix souhaité (€)" name="prixSouhaite" type="number" placeholder="ex : 18 000" form={form} errors={errors} handleChange={handleChange} />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>État général <span style={{ color: "var(--color-sg-accent-blue)" }}>*</span></label>
@@ -234,11 +234,11 @@ export default function ReprisePage() {
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               <h2 className="font-bold text-xl mb-2" style={{ color: "var(--text-primary)" }}>Vos coordonnées</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <Field label="Nom" name="nom" placeholder="Dupont" required />
-                <Field label="Prénom" name="prenom" placeholder="Jean" required />
+                <Field label="Nom" name="nom" placeholder="Dupont" required form={form} errors={errors} handleChange={handleChange} />
+                <Field label="Prénom" name="prenom" placeholder="Jean" required form={form} errors={errors} handleChange={handleChange} />
               </div>
-              <Field label="Adresse e-mail" name="email" type="email" placeholder="jean.dupont@email.com" required />
-              <Field label="Numéro de téléphone" name="telephone" type="tel" placeholder="+33 6 00 00 00 00" required />
+              <Field label="Adresse e-mail" name="email" type="email" placeholder="jean.dupont@email.com" required form={form} errors={errors} handleChange={handleChange} />
+              <Field label="Numéro de téléphone" name="telephone" type="tel" placeholder="+33 6 00 00 00 00" required form={form} errors={errors} handleChange={handleChange} />
               <div className="rounded-xl p-4 border" style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)" }}>
                 <p className="text-xs" style={{ color: "var(--text-muted)" }}>Récapitulatif : <span style={{ color: "var(--text-secondary)" }}>{form.marque} {form.modele} {form.annee && `(${form.annee})`} — {form.kilometrage && `${Number(form.kilometrage).toLocaleString("fr-FR")} km`}</span></p>
               </div>

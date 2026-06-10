@@ -10,6 +10,32 @@ import { MAKES, getModelsForMake, ENERGY_TYPES, TRANSMISSION_TYPES, VEHICLE_TYPE
 const STATUSES = ["En ligne", "Brouillon", "En préparation", "Réservé", "Vendu"];
 const BADGES = ["", "Coup de cœur", "Nouveau", "Exclusif"];
 
+const StatutBadge = ({ status }: { status: string }) => {
+  const c = ({ "En ligne": "green", "Réservé": "orange", "En préparation": "gray", "Vendu": "red" })[status] || "gray";
+  return (<span className="px-2.5 py-1 rounded-full text-xs font-medium border" style={{ backgroundColor: `var(--color-${c}-100)`, color: `var(--color-${c}-600)`, borderColor: `var(--color-${c}-200)` }}>{status}</span>);
+};
+
+const Input = ({ label, val, onChange, placeholder, type = "text", required }: { label: string; val: string; onChange: (v: string) => void; placeholder?: string; type?: string; required?: boolean }) => (
+  <div>
+    <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>{label}{required && <span style={{ color: "var(--color-sg-accent-blue)" }}> *</span>}</label>
+    <input type={type} value={val} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+      className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
+      style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
+  </div>
+);
+
+const Select = ({ label, val, onChange, options, required }: { label: string; val: string; onChange: (v: string) => void; options: string[]; required?: boolean }) => (
+  <div>
+    <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>{label}{required && <span style={{ color: "var(--color-sg-accent-blue)" }}> *</span>}</label>
+    <select value={val} onChange={(e) => onChange(e.target.value)}
+      className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
+      style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }}>
+      <option value="">Sélectionner...</option>
+      {options.map((o) => <option key={o} value={o}>{o}</option>)}
+    </select>
+  </div>
+);
+
 interface FormState {
   make: string; model: string; finition: string; year: string; firstRegDate: string; price: string; mileage: string;
   fuel: string; transmission: string; vehicleType: string; critAir: string; color: string; doors: string; seats: string;
@@ -133,32 +159,6 @@ export default function InventoryAdmin() {
     const q = search.toLowerCase();
     return (!q || `${v.make} ${v.model}`.toLowerCase().includes(q)) && (filterStatus === "Tous les statuts" || v.status === filterStatus);
   });
-
-  const StatutBadge = ({ status }: { status: string }) => {
-    const c = ({ "En ligne": "green", "Réservé": "orange", "En préparation": "gray", "Vendu": "red" })[status] || "gray";
-    return (<span className="px-2.5 py-1 rounded-full text-xs font-medium border" style={{ backgroundColor: `var(--color-${c}-100)`, color: `var(--color-${c}-600)`, borderColor: `var(--color-${c}-200)` }}>{status}</span>);
-  };
-
-  const Input = ({ label, val, onChange, placeholder, type = "text", required }: { label: string; val: string; onChange: (v: string) => void; placeholder?: string; type?: string; required?: boolean }) => (
-    <div>
-      <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>{label}{required && <span style={{ color: "var(--color-sg-accent-blue)" }}> *</span>}</label>
-      <input type={type} value={val} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
-        style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
-    </div>
-  );
-
-  const Select = ({ label, val, onChange, options, required }: { label: string; val: string; onChange: (v: string) => void; options: string[]; required?: boolean }) => (
-    <div>
-      <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>{label}{required && <span style={{ color: "var(--color-sg-accent-blue)" }}> *</span>}</label>
-      <select value={val} onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
-        style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }}>
-        <option value="">Sélectionner...</option>
-        {options.map((o) => <option key={o} value={o}>{o}</option>)}
-      </select>
-    </div>
-  );
 
   return (
     <div className="space-y-6">
