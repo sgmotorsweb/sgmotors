@@ -13,6 +13,7 @@ export default function ReprisePage() {
   const videoInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ marque: "", modele: "", annee: "", kilometrage: "", etat: "", carburant: "", prixSouhaite: "", nom: "", prenom: "", email: "", telephone: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [photosError, setPhotosError] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -22,7 +23,7 @@ export default function ReprisePage() {
   };
 
   const handlePhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) { const newFiles = Array.from(e.target.files).slice(0, 10 - photos.length); setPhotos([...photos, ...newFiles]); }
+    if (e.target.files) { const newFiles = Array.from(e.target.files).slice(0, 10 - photos.length); setPhotos([...photos, ...newFiles]); setPhotosError(""); }
   };
 
   const handleVideos = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,7 +53,14 @@ export default function ReprisePage() {
     return e;
   };
 
-  const goNext = () => { const e = validateStep1(); if (Object.keys(e).length > 0) { setErrors(e); return; } setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const goNext = () => {
+    const e = validateStep1();
+    if (Object.keys(e).length > 0) { setErrors(e); return; }
+    if (photos.length === 0) { setPhotosError("Au moins 1 photo requise"); return; }
+    setPhotosError("");
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const saveLocalMessage = (data: typeof form) => {
     try {
@@ -160,7 +168,7 @@ export default function ReprisePage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <Select label="Marque" name="marque" options={MARQUES} required />
-                <Field label="Modèle" name="modele" placeholder="ex : 911 Carrera" required />
+                <Field label="Modèle" name="modele" placeholder="ex : Clio V" required />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <Field label="Année" name="annee" type="number" placeholder={String(new Date().getFullYear())} required />
@@ -192,6 +200,7 @@ export default function ReprisePage() {
                   <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>JPG, PNG, HEIC — max 20 Mo par fichier</p>
                 </div>
                 <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotos} />
+                {photosError && <p className="mt-2 text-xs" style={{ color: "#ef4444" }}>{photosError}</p>}
                 {photos.length > 0 && (
                   <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-3">
                     {photos.map((f, i) => (

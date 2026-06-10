@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Inbox, Mail, Phone, Car, CheckCircle, Trash2, Eye, X, MessageSquare } from "lucide-react";
+import { Inbox, Mail, Phone, Car, CheckCircle, Trash2, Eye, X, MessageSquare, Search } from "lucide-react";
 
 interface Message {
   id: string;
-  type: "callback" | "reprise" | "contact";
+  type: "callback" | "reprise" | "contact" | "recherche";
   nom: string;
   prenom: string;
   telephone: string;
@@ -79,6 +79,7 @@ export default function MessagesPage() {
               <option value="callback">Appels</option>
               <option value="reprise">Reprises</option>
               <option value="contact">Contact</option>
+              <option value="recherche">Recherche</option>
             </select>
         </div>
         <div className="flex items-center gap-2">
@@ -124,9 +125,18 @@ export default function MessagesPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="flex items-center gap-1.5" style={{ color: msg.type === "callback" ? "var(--color-sg-accent-blue)" : "#a855f7" }}>
-                      {msg.type === "callback" ? <Phone className="h-4 w-4" /> : <Car className="h-4 w-4" />}
-                      {msg.type === "callback" ? "Appel" : "Reprise"}
+                    <span className="flex items-center gap-1.5" style={{
+                      color: msg.type === "callback" ? "var(--color-sg-accent-blue)" :
+                             msg.type === "reprise" ? "#a855f7" :
+                             msg.type === "recherche" ? "#f59e0b" : "#22c55e"
+                    }}>
+                      {msg.type === "callback" ? <Phone className="h-4 w-4" /> :
+                       msg.type === "reprise" ? <Car className="h-4 w-4" /> :
+                       msg.type === "recherche" ? <Search className="h-4 w-4" /> :
+                       <MessageSquare className="h-4 w-4" />}
+                      {msg.type === "callback" ? "Appel" :
+                       msg.type === "reprise" ? "Reprise" :
+                       msg.type === "recherche" ? "Recherche" : "Contact"}
                     </span>
                   </td>
                   <td className="px-6 py-4">

@@ -12,7 +12,7 @@ const PRICE_MAX = 200000;
 const currentYear = new Date().getFullYear();
 const YEARS = ["Toutes années", ...Array.from({ length: currentYear - 1999 }, (_, i) => String(currentYear - i))];
 const KM_RANGES = [
-  { label: "Tous km", max: Infinity },
+  { label: "Kilométrage", max: Infinity },
   { label: "< 10 000 km", max: 10000 },
   { label: "< 20 000 km", max: 20000 },
   { label: "< 30 000 km", max: 30000 },
@@ -45,13 +45,13 @@ const SelectBox = ({ value, onChange, children }: { value: string; onChange: (v:
 export default function CataloguePage() {
   const [vehicles, setVehicles] = useState<VehicleData[]>([]);
   const [search, setSearch] = useState("");
-  const [make, setMake] = useState("Toutes marques");
-  const [model, setModel] = useState("Tous modèles");
-  const [transmission, setTransmission] = useState("Toutes boîtes");
+  const [make, setMake] = useState("");
+  const [model, setModel] = useState("");
+  const [transmission, setTransmission] = useState("");
   const [priceMin, setPriceMin] = useState(PRICE_MIN);
   const [priceMax, setPriceMax] = useState(PRICE_MAX);
   const [kmRange, setKmRange] = useState(KM_RANGES[0]);
-  const [year, setYear] = useState("Toutes années");
+  const [year, setYear] = useState("");
   const [sort, setSort] = useState<SortOption>("price_asc");
   const [showFilters, setShowFilters] = useState(true);
 
@@ -59,30 +59,30 @@ export default function CataloguePage() {
     setVehicles(getVehicles());
   }, []);
 
-  const MAKES = ["Toutes marques", ...Array.from(new Set(vehicles.map((v) => v.make))).sort()];
-  const TRANSMISSIONS = ["Toutes boîtes", ...Array.from(new Set(vehicles.map((v) => v.transmission))).sort()];
+  const MAKES = ["", ...Array.from(new Set(vehicles.map((v) => v.make))).sort()];
+  const TRANSMISSIONS = ["", ...Array.from(new Set(vehicles.map((v) => v.transmission))).sort()];
 
   const availableModels = useMemo(() => {
     const models = vehicles.filter((v) => make === "Toutes marques" || v.make === make).map((v) => v.model);
-    return ["Tous modèles", ...Array.from(new Set(models)).sort()];
+    return ["", ...Array.from(new Set(models)).sort()];
   }, [make, vehicles]);
 
-  const handleMakeChange = (val: string) => { setMake(val); setModel("Tous modèles"); };
+  const handleMakeChange = (val: string) => { setMake(val); setModel(""); };
 
-  const activeFilterCount = [make !== "Toutes marques", model !== "Tous modèles", transmission !== "Toutes boîtes", priceMin > PRICE_MIN || priceMax < PRICE_MAX, kmRange.label !== "Tous km", year !== "Toutes années"].filter(Boolean).length;
+  const activeFilterCount = [!!make, !!model, !!transmission, priceMin > PRICE_MIN || priceMax < PRICE_MAX, kmRange.label !== "Kilométrage", !!year].filter(Boolean).length;
 
-  const clearFilters = () => { setSearch(""); setMake("Toutes marques"); setModel("Tous modèles"); setTransmission("Toutes boîtes"); setPriceMin(PRICE_MIN); setPriceMax(PRICE_MAX); setKmRange(KM_RANGES[0]); setYear("Toutes années"); setSort("price_asc"); };
+  const clearFilters = () => { setSearch(""); setMake(""); setModel(""); setTransmission(""); setPriceMin(PRICE_MIN); setPriceMax(PRICE_MAX); setKmRange(KM_RANGES[0]); setYear(""); setSort("price_asc"); };
 
   const filtered = useMemo(() => {
     let results = vehicles.filter((v) => {
       const q = search.toLowerCase();
       return (!q || `${v.make} ${v.model} ${v.year}`.toLowerCase().includes(q)) &&
-        (make === "Toutes marques" || v.make === make) &&
-        (model === "Tous modèles" || v.model === model) &&
-        (transmission === "Toutes boîtes" || v.transmission === transmission) &&
+        (!make || v.make === make) &&
+        (!model || v.model === model) &&
+        (!transmission || v.transmission === transmission) &&
         v.price >= priceMin && v.price <= priceMax &&
         v.mileage <= kmRange.max &&
-        (year === "Toutes années" || String(v.year) === year);
+        (!year || String(v.year) === year);
     });
     results.sort((a, b) => { if (sort === "price_asc") return a.price - b.price; if (sort === "price_desc") return b.price - a.price; if (sort === "mileage_asc") return a.mileage - b.mileage; return b.year - a.year; });
     return results;
@@ -125,28 +125,29 @@ export default function CataloguePage() {
           </div>
           {showFilters && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 mt-3 pt-3 border-t" style={{ borderColor: "var(--border-primary)" }}>
-              <SelectBox value={make} onChange={handleMakeChange}>{MAKES.map((m) => <option key={m} value={m}>{m}</option>)}</SelectBox>
-              <SelectBox value={model} onChange={setModel}>{availableModels.map((m) => <option key={m} value={m}>{m}</option>)}</SelectBox>
+              <SelectBox value={make} onChange={handleMakeChange}>{MAKES.map((m) => <option key={m} value={m}>{m || "Marques"}</option>)}</SelectBox>
+              <SelectBox value={model} onChange={setModel}>{availableModels.map((m) => <option key={m} value={m}>{m || "Modèles"}</option>)}</SelectBox>
               <div className="col-span-2 sm:col-span-3 lg:col-span-2">
                 <div className="text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
-                  Prix : {priceMin.toLocaleString("fr-FR")} € — {priceMax >= PRICE_MAX ? `+${PRICE_MAX.toLocaleString("fr-FR")}` : `${priceMax.toLocaleString("fr-FR")}`} €
+                  Budget
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs shrink-0" style={{ color: "var(--text-muted)" }}>{PRICE_MIN.toLocaleString("fr-FR")}€</span>
-                  <input type="range" min={PRICE_MIN} max={PRICE_MAX} step={1000} value={priceMin}
-                    onChange={(e) => setPriceMin(Math.min(Number(e.target.value), priceMax - 1000))}
-                    className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer accent-[var(--color-sg-accent-blue)]"
-                    style={{ backgroundColor: "var(--bg-tertiary)" }} />
-                  <input type="range" min={PRICE_MIN} max={PRICE_MAX} step={1000} value={priceMax}
-                    onChange={(e) => setPriceMax(Math.max(Number(e.target.value), priceMin + 1000))}
-                    className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer accent-[var(--color-sg-accent-blue)]"
-                    style={{ backgroundColor: "var(--bg-tertiary)" }} />
-                  <span className="text-xs shrink-0" style={{ color: "var(--text-muted)" }}>{PRICE_MAX.toLocaleString("fr-FR")}€</span>
+                <div className="flex items-center gap-2">
+                  <input type="number" min={PRICE_MIN} max={priceMax} value={priceMin}
+                    onChange={(e) => setPriceMin(Math.max(PRICE_MIN, Math.min(Number(e.target.value) || 0, priceMax)))}
+                    placeholder="Min €"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
+                    style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
+                  <span className="text-xs" style={{ color: "var(--text-muted)" }}>—</span>
+                  <input type="number" min={priceMin} max={PRICE_MAX} value={priceMax}
+                    onChange={(e) => setPriceMax(Math.max(Number(e.target.value) || 0, priceMin))}
+                    placeholder="Max €"
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
+                    style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
                 </div>
               </div>
               <SelectBox value={kmRange.label} onChange={(v) => setKmRange(KM_RANGES.find((k) => k.label === v) || KM_RANGES[0])}>{KM_RANGES.map((k) => <option key={k.label} value={k.label}>{k.label}</option>)}</SelectBox>
-              <SelectBox value={transmission} onChange={setTransmission}>{TRANSMISSIONS.map((t) => <option key={t} value={t}>{t}</option>)}</SelectBox>
-              <SelectBox value={year} onChange={setYear}>{YEARS.map((y) => <option key={y} value={y}>{y}</option>)}</SelectBox>
+              <SelectBox value={transmission} onChange={setTransmission}>{TRANSMISSIONS.map((t) => <option key={t} value={t}>{t || "Boîtes"}</option>)}</SelectBox>
+              <SelectBox value={year} onChange={setYear}>{YEARS.map((y) => <option key={y} value={y}>{y || "Année"}</option>)}</SelectBox>
             </div>
           )}
         </div>

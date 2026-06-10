@@ -26,12 +26,35 @@ export default function RequeteRecherchePage() {
     return e;
   };
 
+  const saveLocalMessage = () => {
+    try {
+      const stored = localStorage.getItem("sgmotors_messages");
+      const messages = stored ? JSON.parse(stored) : [];
+      messages.unshift({
+        id: `msg_${Date.now()}`,
+        type: "recherche",
+        nom: form.nom, prenom: form.prenom, telephone: form.telephone, email: form.email,
+        vehicule: `${form.marque} ${form.modele || ""}`.trim(),
+        message: `Kilométrage max: ${form.km || "Non précisé"} km\n\nDescription:\n${form.description || "Aucune"}`,
+        date: new Date().toISOString(), status: "non lu",
+      });
+      localStorage.setItem("sgmotors_messages", JSON.stringify(messages));
+    } catch {}
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const ve = validate();
     if (Object.keys(ve).length > 0) { setErrors(ve); return; }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1600));
+    saveLocalMessage();
+    try {
+      await fetch("/api/requete-recherche", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+    } catch {}
     setLoading(false);
     setSubmitted(true);
   };
@@ -59,14 +82,14 @@ export default function RequeteRecherchePage() {
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 mt-1" style={{ backgroundColor: "var(--badge-bg)" }}><Search className="h-7 w-7" style={{ color: "var(--color-sg-accent-blue)" }} /></div>
             <div>
               <h1 className="text-3xl md:text-4xl font-extrabold mb-2" style={{ color: "var(--text-primary)" }}>Requête de recherche</h1>
-              <p className="max-w-xl" style={{ color: "var(--text-muted)" }}>Vous recherchez un modèle spécifique introuvable dans notre stock ? Déposez votre requête et nous vous alerterons dès son arrivée.</p>
+               <p className="max-w-xl" style={{ color: "var(--text-muted)" }}>Vous recherchez un modèle spécifique introuvable dans notre stock ? Confiez-nous votre recherche : nous mobilisons notre réseau professionnel pour vous trouver LA bonne affaire, avec un accompagnement complet de A à Z.</p>
             </div>
           </div>
         </div>
       </div>
       <div className="container mx-auto px-4 py-12 max-w-3xl">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-          {[{ step: "1", title: "Décrivez votre recherche", desc: "Marque, modèle, kilométrage…" }, { step: "2", title: "Nous trouvons le véhicule", desc: "Nous surveillons le marché pour vous." }, { step: "3", title: "Vous êtes alerté", desc: "Appel ou e-mail dès que disponible." }].map((item) => (
+          {[{ step: "1", title: "Décrivez votre recherche", desc: "Marque, modèle, kilométrage, budget, options souhaitées… Nous échangeons avec vous pour cibler précisément le véhicule de vos rêves." }, { step: "2", title: "Nous mobilisons notre réseau", desc: "Nous activons l'ensemble de notre réseau professionnel (concessionnaires, courtiers, mandataires, ventes privées) pour dénicher la perle rare. Pas de simple recherche internet : un vrai sourcing sur le terrain." }, { step: "3", title: "Accompagnement complet", desc: "De la négociation au contrôle technique, en passant par les démarches administratives (carte grise, garantie, financement), nous vous accompagnons jusqu'à la livraison. Aucun frais caché." }].map((item) => (
             <div key={item.step} className="border rounded-xl p-5" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }}>
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm mb-3" style={{ backgroundColor: "var(--color-sg-accent-blue)" }}>{item.step}</div>
               <p className="font-semibold text-sm mb-1" style={{ color: "var(--text-primary)" }}>{item.title}</p>
@@ -88,7 +111,7 @@ export default function RequeteRecherchePage() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>Modèle</label>
-                <input type="text" name="modele" value={form.modele} onChange={handleChange} placeholder="ex : 911 Carrera, Classe C…" className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition" style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
+                <input type="text" name="modele" value={form.modele} onChange={handleChange} placeholder="ex : A3" className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition" style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
               </div>
             </div>
             <div>
