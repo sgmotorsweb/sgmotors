@@ -62,20 +62,16 @@ export default function ReprisePage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const saveLocalMessage = (data: typeof form) => {
+  const saveLocalMessage = async (data: typeof form) => {
     try {
-      const stored = localStorage.getItem("sgmotors_messages");
-      const messages = stored ? JSON.parse(stored) : [];
-      messages.unshift({
-        id: `msg_${Date.now()}`,
-        type: "reprise",
-        nom: data.nom, prenom: data.prenom, telephone: data.telephone, email: data.email,
-        marque: data.marque, modele: data.modele,
-        vehicule: `${data.marque} ${data.modele} ${data.annee}`,
-        message: `Kilométrage: ${data.kilometrage} km, Carburant: ${data.carburant}, État: ${data.etat}${data.prixSouhaite ? `, Prix souhaité: ${data.prixSouhaite}€` : ""}`,
-        date: new Date().toISOString(), status: "non lu",
+      await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "reprise",
+          data: { nom: data.nom, prenom: data.prenom, telephone: data.telephone, email: data.email, marque: data.marque, modele: data.modele, annee: data.annee, kilometrage: data.kilometrage, carburant: data.carburant, etat: data.etat, prixSouhaite: data.prixSouhaite },
+        }),
       });
-      localStorage.setItem("sgmotors_messages", JSON.stringify(messages));
     } catch {}
   };
 

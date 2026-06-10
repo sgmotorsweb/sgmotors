@@ -5,11 +5,11 @@ import { Settings, CheckCircle, ArrowLeft, Fuel, Gauge, Cog, Calendar, Palette, 
 import ContactButtons, { MobileContactBar, FinanceContact } from "./ContactButtons";
 import StatsTracker from "./StatsTracker";
 import VehicleGallery from "@/components/VehicleGallery";
-import { getVehicleById } from "@/lib/vehicles";
+import { getServerVehicle } from "@/lib/vehicles-server";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const vehicle = getVehicleById(id);
+  const vehicle = await getServerVehicle(id);
   if (!vehicle) return { title: "Véhicule non trouvé - SG MOTORS" };
 
   return {
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function VehiculeDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const vehicle = getVehicleById(id);
+  const vehicle = await getServerVehicle(id);
   if (!vehicle) notFound();
 
   const jsonLd = {

@@ -4,17 +4,18 @@ import { useState, useEffect } from "react";
 import { PhoneCall, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import CallbackWrapper from "./CallbackWrapper";
-import { getSettings } from "@/lib/settings";
+import { fetchServerSettings } from "@/lib/settings";
 
 function useContact() {
   const [whatsapp, setWhatsapp] = useState("");
   const [phone, setPhone] = useState("");
 
   useEffect(() => {
-    const s = getSettings();
-    if (s.whatsapp) setWhatsapp(s.whatsapp.replace(/\s/g, ""));
-    else if (s.phone) setWhatsapp(s.phone.replace(/\s/g, ""));
-    if (s.phone) setPhone(s.phone);
+    fetchServerSettings().then((s) => {
+      if (s.whatsapp) setWhatsapp(s.whatsapp.replace(/\s/g, ""));
+      else if (s.phone) setWhatsapp(s.phone.replace(/\s/g, ""));
+      if (s.phone) setPhone(s.phone);
+    });
   }, []);
 
   return { whatsapp, phone, phoneDigits: phone.replace(/\s/g, "") };

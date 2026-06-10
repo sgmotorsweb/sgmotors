@@ -3,20 +3,34 @@
 import { useEffect, useState } from "react";
 import { Eye, MessageSquare, Car, TrendingUp, Users } from "lucide-react";
 import { ViewsChart, LeadsChart } from "./DashboardCharts";
-import { getStats } from "@/lib/stats";
-import { getVehicles } from "@/lib/vehicles";
+import { fetchVehicles } from "@/lib/vehicles";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ totalViews: 0, totalVisitors: 0, totalCallbackRequests: 0, totalRepriseRequests: 0 });
+  const [dailyStats, setDailyStats] = useState<Record<string, { views: number; visitors: number; callbacks: number; reprises: number }>>({});
   const [vehicleCount, setVehicleCount] = useState(0);
   const [onlineCount, setOnlineCount] = useState(0);
 
   useEffect(() => {
-    const s = getStats();
-    setStats({ totalViews: s.totalViews, totalVisitors: s.totalVisitors, totalCallbackRequests: s.totalCallbackRequests, totalRepriseRequests: s.totalRepriseRequests });
-    const vehicles = getVehicles();
-    setVehicleCount(vehicles.length);
-    setOnlineCount(vehicles.filter((v) => v.status === "En ligne").length);
+    fetch("/api/stats").then((r) => r.ok && r.json()).then((j) => {
+      if (j?.data) {
+        setStats({
+          totalViews: j.data.totalViews || 0,
+          totalVisitors: 0,
+          totalCallbackRequests: j.data.totalCalls || 0,
+          totalRepriseRequests: 0,
+        });
+        const ds: Record<string, { views: number; visitors: number; callbacks: number; reprises: number }> = {};
+        (j.data.dailyStats || []).forEach((d: { date: string; data?: { views?: number; visitors?: number; callbacks?: number; reprises?: number } }) => {
+          ds[d.date] = { views: d.data?.views || 0, visitors: d.data?.visitors || 0, callbacks: d.data?.callbacks || 0, reprises: d.data?.reprises || 0 };
+        });
+        setDailyStats(ds);
+      }
+    }).catch(() => {});
+    fetchVehicles().then((vehicles) => {
+      setVehicleCount(vehicles.length);
+      setOnlineCount(vehicles.filter((v) => v.status === "En ligne").length);
+    });
   }, []);
 
   const cards = [
@@ -53,22 +67,22 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-2">
         <div className="border rounded-xl p-6" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }}>
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>Véhicules en ligne</p>
-          <h3 className="text-3xl font-bold" style={{ color: "var(--text-primary)" }}>{onlineCount}</h3>
-        </div>
-        <div className="border rounded-xl p-6" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }}>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Total inventaire</p>
-          <h3 className="text-3xl font-bold" style={{ color: "var(--text-primary)" }}>{vehicleCount}</h3>
+          <h3 className="text-3xl font-bold mt-1" style={{ color: "var(--text-primary)" }}>{onlineCount} / {vehicleCount}</h3>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-2">
         <div className="border rounded-xl p-6" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }}>
-          <h3 className="text-lg font-bold mb-6" style={{ color: "var(--text-primary)" }}>Trafic 7 derniers jours (Vues)</h3>
-          <ViewsChart />
+          <h3 className="text-lg font-bold mb-1 flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+            <TrendingUp className="h-5 w-5" style={{ color: "var(--color-sg-accent-blue)" }} /> Vues (7 jours)
+          </h3>
+          <ViewsChart dailyStats={dailyStats} />
         </div>
         <div className="border rounded-xl p-6" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }}>
-          <h3 className="text-lg font-bold mb-6" style={{ color: "var(--text-primary)" }}>Leads (Appels + Reprises)</h3>
-          <LeadsChart />
+          <h3 className="text-lg font-bold mb-1 flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+            <TrendingUp className="h-5 w-5" style={{ color: "#25D366" }} /> Leads (4 semaines)
+          </h3>
+          <LeadsChart dailyStats={dailyStats} />
         </div>
       </div>
     </div>

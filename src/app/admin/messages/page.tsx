@@ -3,57 +3,60 @@
 import { useState, useEffect } from "react";
 import { Inbox, Mail, Phone, Car, CheckCircle, Trash2, Eye, X, MessageSquare, Search } from "lucide-react";
 
-interface Message {
+interface DbMessage {
   id: string;
   type: "callback" | "reprise" | "contact" | "recherche";
-  nom: string;
-  prenom: string;
-  telephone: string;
-  email: string;
-  vehicule?: string;
-  sujet?: string;
-  marque?: string;
-  modele?: string;
-  date: string;
-  message: string;
-  status: "lu" | "non lu";
+  data: Record<string, string>;
+  read: boolean;
+  created_at: string;
 }
 
 export default function MessagesPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<DbMessage[]>([]);
   const [filterType, setFilterType] = useState<string>("Tous");
   const [filterStatus, setFilterStatus] = useState<string>("Tous");
-  const [selected, setSelected] = useState<Message | null>(null);
+  const [selected, setSelected] = useState<DbMessage | null>(null);
 
-  useEffect(() => {
-    const stored = localStorage.getItem("sgmotors_messages");
-    if (stored) setMessages(JSON.parse(stored));
-  }, []);
-
-  const saveMessages = (updated: Message[]) => {
-    setMessages(updated);
-    localStorage.setItem("sgmotors_messages", JSON.stringify(updated));
+  const fetchMessages = async () => {
+    try {
+      const res = await fetch("/api/messages");
+      if (res.ok) {
+        const json = await res.json();
+        setMessages(json.data || []);
+      }
+    } catch {}
   };
 
-  const markAsRead = (id: string) => {
-    saveMessages(messages.map((m) => m.id === id ? { ...m, status: "lu" as const } : m));
-    if (selected && selected.id === id) {
-      setSelected({ ...selected, status: "lu" });
-    }
+  useEffect(() => { fetchMessages(); }, []);
+
+  const markAsRead = async (id: string) => {
+    await fetch(`/api/messages/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ read: true }),
+    });
+    fetchMessages();
   };
 
-  const deleteMessage = (id: string) => {
-    saveMessages(messages.filter((m) => m.id !== id));
+  const deleteMessage = async (id: string) => {
+    await fetch(`/api/messages/${encodeURIComponent(id)}`, { method: "DELETE" });
     if (selected && selected.id === id) setSelected(null);
+    fetchMessages();
   };
 
   const filtered = messages.filter((m) => {
     if (filterType !== "Tous" && m.type !== filterType) return false;
-    if (filterStatus !== "Tous" && m.status !== filterStatus) return false;
+    if (filterStatus !== "Tous") {
+      const isRead = m.read;
+      if (filterStatus === "lu" && !isRead) return false;
+      if (filterStatus === "non lu" && isRead) return false;
+    }
     return true;
   });
 
-  const unreadCount = messages.filter((m) => m.status === "non lu").length;
+  const unreadCount = messages.filter((m) => !m.read).length;
+
+  const d = (m: DbMessage) => m.data || {};
 
   return (
     <div className="space-y-6">
@@ -103,25 +106,25 @@ export default function MessagesPage() {
                 <th className="px-6 py-4 font-medium">Type</th>
                 <th className="px-6 py-4 font-medium">Client</th>
                 <th className="px-6 py-4 font-medium">Contact</th>
-                <th className="px-6 py-4 font-medium">Véhicule</th>
+                <th className="px-6 py-4 font-medium">Sujet</th>
                 <th className="px-6 py-4 font-medium">Date</th>
                 <th className="px-6 py-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: "var(--border-primary)" }}>
-              {filtered.map((msg) => (
+              {filtered.map((msg) => {
+                const data = d(msg);
+                return (
                 <tr key={msg.id} className="transition-colors cursor-pointer" style={{ backgroundColor: "var(--bg-card)" }}
                   onClick={() => setSelected(msg)}>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${
-                      msg.status === "non lu" ? "" : ""
-                    }`} style={{
-                      backgroundColor: msg.status === "non lu" ? "rgba(0,102,255,0.1)" : "var(--bg-tertiary)",
-                      color: msg.status === "non lu" ? "var(--color-sg-accent-blue)" : "var(--text-muted)",
-                      borderColor: msg.status === "non lu" ? "rgba(0,102,255,0.2)" : "var(--border-primary)"
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border`} style={{
+                      backgroundColor: !msg.read ? "rgba(0,102,255,0.1)" : "var(--bg-tertiary)",
+                      color: !msg.read ? "var(--color-sg-accent-blue)" : "var(--text-muted)",
+                      borderColor: !msg.read ? "rgba(0,102,255,0.2)" : "var(--border-primary)"
                     }}>
-                      {msg.status === "non lu" ? <Mail className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
-                      {msg.status === "non lu" ? "Non lu" : "Lu"}
+                      {!msg.read ? <Mail className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
+                      {!msg.read ? "Non lu" : "Lu"}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -140,19 +143,19 @@ export default function MessagesPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="font-medium" style={{ color: "var(--text-primary)" }}>{msg.prenom} {msg.nom}</div>
+                    <div className="font-medium" style={{ color: "var(--text-primary)" }}>{data.prenom || ""} {data.nom || ""}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <div style={{ color: "var(--text-secondary)" }}>{msg.telephone}</div>
-                    <div className="text-xs" style={{ color: "var(--text-muted)" }}>{msg.email}</div>
+                    <div style={{ color: "var(--text-secondary)" }}>{data.telephone || ""}</div>
+                    <div className="text-xs" style={{ color: "var(--text-muted)" }}>{data.email || ""}</div>
                   </td>
-                  <td className="px-6 py-4 text-sm" style={{ color: "var(--text-secondary)" }}>{msg.vehicule}</td>
+                  <td className="px-6 py-4 text-sm" style={{ color: "var(--text-secondary)" }}>{data.vehicule || data.sujet || data.marque || ""}{data.modele ? ` ${data.modele}` : ""}</td>
                   <td className="px-6 py-4 text-sm" style={{ color: "var(--text-secondary)" }}>
-                    {new Date(msg.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                    {new Date(msg.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                      {msg.status === "non lu" && (
+                      {!msg.read && (
                         <button onClick={() => markAsRead(msg.id)} className="p-2 rounded-lg transition-colors" style={{ color: "#22c55e" }} title="Marquer comme lu">
                           <CheckCircle className="h-4 w-4" />
                         </button>
@@ -166,7 +169,8 @@ export default function MessagesPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
               {filtered.length === 0 && (
                 <tr><td colSpan={7} className="px-6 py-12 text-center" style={{ color: "var(--text-muted)" }}>Aucun message trouvé</td></tr>
               )}
@@ -175,7 +179,10 @@ export default function MessagesPage() {
         </div>
       </div>
 
-      {selected && (
+      {selected && (() => {
+        const data = d(selected);
+        const sujet = data.vehicule || data.sujet || `${data.marque || ""} ${data.modele || ""}`.trim();
+        return (
         <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-12 overflow-y-auto" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={() => setSelected(null)}>
           <div className="rounded-2xl p-8 max-w-lg w-full shadow-2xl border my-8" onClick={(e) => e.stopPropagation()} style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }}>
             <div className="flex justify-between items-center mb-6">
@@ -185,10 +192,12 @@ export default function MessagesPage() {
                 </div>
                 <div>
                   <h2 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
-                    {selected.type === "callback" ? "Demande de rappel" : "Demande de reprise"}
+                    {selected.type === "callback" ? "Demande de rappel" :
+                     selected.type === "reprise" ? "Demande de reprise" :
+                     selected.type === "recherche" ? "Requête de recherche" : "Message contact"}
                   </h2>
                   <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                    {new Date(selected.date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    {new Date(selected.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
               </div>
@@ -199,51 +208,57 @@ export default function MessagesPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Prénom</label>
-                  <p className="font-medium" style={{ color: "var(--text-primary)" }}>{selected.prenom}</p>
+                  <p className="font-medium" style={{ color: "var(--text-primary)" }}>{data.prenom || "—"}</p>
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Nom</label>
-                  <p className="font-medium" style={{ color: "var(--text-primary)" }}>{selected.nom}</p>
+                  <p className="font-medium" style={{ color: "var(--text-primary)" }}>{data.nom || "—"}</p>
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Téléphone</label>
-                  <a href={`tel:${selected.telephone}`} className="font-medium transition-colors" style={{ color: "var(--color-sg-accent-blue)" }}>{selected.telephone}</a>
+                  {data.telephone ? (
+                    <a href={`tel:${data.telephone}`} className="font-medium transition-colors" style={{ color: "var(--color-sg-accent-blue)" }}>{data.telephone}</a>
+                  ) : <p className="font-medium" style={{ color: "var(--text-muted)" }}>—</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Email</label>
-                  <a href={`mailto:${selected.email}`} className="font-medium transition-colors" style={{ color: "var(--color-sg-accent-blue)" }}>{selected.email}</a>
+                  {data.email ? (
+                    <a href={`mailto:${data.email}`} className="font-medium transition-colors" style={{ color: "var(--color-sg-accent-blue)" }}>{data.email}</a>
+                  ) : <p className="font-medium" style={{ color: "var(--text-muted)" }}>—</p>}
                 </div>
               </div>
 
+              {sujet && (
               <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Véhicule concerné</label>
-                <p className="font-medium" style={{ color: "var(--text-primary)" }}>{selected.vehicule}</p>
+                <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Sujet / Véhicule</label>
+                <p className="font-medium" style={{ color: "var(--text-primary)" }}>{sujet}</p>
               </div>
+              )}
 
+              {data.message && (
               <div>
                 <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Message</label>
                 <div className="p-4 rounded-xl text-sm leading-relaxed" style={{ backgroundColor: "var(--bg-tertiary)", color: "var(--text-primary)" }}>
-                  {selected.message}
+                  {data.message}
                 </div>
               </div>
+              )}
 
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Statut :</span>
-                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${
-                  selected.status === "non lu" ? "" : ""
-                }`} style={{
-                  backgroundColor: selected.status === "non lu" ? "rgba(0,102,255,0.1)" : "rgba(34,197,94,0.1)",
-                  color: selected.status === "non lu" ? "var(--color-sg-accent-blue)" : "#22c55e",
-                  borderColor: selected.status === "non lu" ? "rgba(0,102,255,0.2)" : "rgba(34,197,94,0.2)"
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border" style={{
+                  backgroundColor: !selected.read ? "rgba(0,102,255,0.1)" : "rgba(34,197,94,0.1)",
+                  color: !selected.read ? "var(--color-sg-accent-blue)" : "#22c55e",
+                  borderColor: !selected.read ? "rgba(0,102,255,0.2)" : "rgba(34,197,94,0.2)"
                 }}>
-                  {selected.status === "non lu" ? <Mail className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
-                  {selected.status === "non lu" ? "Non lu" : "Lu"}
+                  {!selected.read ? <Mail className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
+                  {!selected.read ? "Non lu" : "Lu"}
                 </span>
               </div>
             </div>
 
             <div className="flex gap-4 mt-8 pt-6 border-t" style={{ borderColor: "var(--border-primary)" }}>
-              {selected.status === "non lu" && (
+              {!selected.read && (
                 <button onClick={() => markAsRead(selected.id)}
                   className="flex-1 py-3 rounded-xl font-medium transition-colors text-white flex items-center justify-center gap-2"
                   style={{ backgroundColor: "var(--color-sg-accent-blue)" }}>
@@ -252,13 +267,14 @@ export default function MessagesPage() {
               )}
               <button onClick={() => { deleteMessage(selected.id); setSelected(null); }}
                 className="py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
-                style={{ color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)", backgroundColor: "rgba(239,68,68,0.05)", flex: selected.status === "non lu" ? "0 1 auto" : "1" }}>
+                style={{ color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)", backgroundColor: "rgba(239,68,68,0.05)", flex: !selected.read ? "0 1 auto" : "1" }}>
                 <Trash2 className="h-4 w-4" /> Supprimer
               </button>
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

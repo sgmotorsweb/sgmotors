@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Plus, Search, Edit, Trash2, Eye, X, Upload } from "lucide-react";
 import Image from "next/image";
 import type { VehicleData } from "@/lib/vehicles";
+import { fetchVehicles, saveVehicle, deleteVehicle } from "@/lib/vehicles";
 import { MAKES, getModelsForMake, ENERGY_TYPES, TRANSMISSION_TYPES, VEHICLE_TYPES, DOOR_COUNTS, SEAT_COUNTS, CONDITION_TYPES, CRIT_AIR_STICKERS } from "@/lib/cars-data";
 
 const STATUSES = ["En ligne", "En préparation", "Réservé", "Vendu"];
@@ -32,32 +33,31 @@ export default function InventoryAdmin() {
   const [editing, setEditing] = useState<VehicleData | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const modelsForMake = form.make ? getModelsForMake(form.make) : [];
 
   useEffect(() => {
-    const stored = localStorage.getItem("sgmotors_vehicles");
-    if (stored) setVehicles(JSON.parse(stored));
+    fetchVehicles().then(setVehicles);
   }, []);
 
-  const saveVehicles = (updated: VehicleData[]) => {
-    setVehicles(updated);
-    localStorage.setItem("sgmotors_vehicles", JSON.stringify(updated));
-  };
+  const refreshVehicles = () => fetchVehicles().then(setVehicles);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
-    const newFiles = Array.from(e.target.files);
-    setUploadedFiles([...uploadedFiles, ...newFiles]);
-    const newUrls = newFiles.map((f) => URL.createObjectURL(f));
-    setForm({ ...form, images: [...form.images, ...newUrls] });
+    const files = Array.from(e.target.files);
+    Promise.all(files.map((f) => new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(f);
+    }))).then((dataUrls) => {
+      setForm((prev) => ({ ...prev, images: [...prev.images, ...dataUrls] }));
+    });
+    e.target.value = "";
   };
 
   const removeImage = (index: number) => {
-    setForm({ ...form, images: form.images.filter((_, i) => i !== index) });
-    setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
+    setForm((prev) => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
   };
 
   const makeModelOptions = (make: string) => {
@@ -69,7 +69,6 @@ export default function InventoryAdmin() {
   const openAdd = () => {
     setEditing(null);
     setForm(emptyForm());
-    setUploadedFiles([]);
     setShowModal(true);
   };
 
@@ -84,8 +83,8 @@ export default function InventoryAdmin() {
       options: (v.options || []).join("\n"), videoUrl: v.videoUrl || "",
       images: v.images,
     });
-    setUploadedFiles([]);
     setShowModal(true);
+    fileInputRef.current && (fileInputRef.current.value = "");
   };
 
   const handleSave = () => {
@@ -105,11 +104,11 @@ export default function InventoryAdmin() {
       videoUrl: form.videoUrl || undefined,
       images, badge: form.badge || undefined, status: form.status, views: editing ? editing.views || 0 : 0,
     };
-    saveVehicles(editing ? vehicles.map((v) => v.id === editing.id ? vehicle : v) : [...vehicles, vehicle]);
+    saveVehicle(vehicle).then(refreshVehicles);
     setShowModal(false);
   };
 
-  const handleDelete = (id: string) => { saveVehicles(vehicles.filter((v) => v.id !== id)); setShowDeleteConfirm(null); };
+  const handleDelete = (id: string) => { deleteVehicle(id).then(refreshVehicles); setShowDeleteConfirm(null); };
 
   const filtered = vehicles.filter((v) => {
     const q = search.toLowerCase();
@@ -189,7 +188,7 @@ export default function InventoryAdmin() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
                       <div className="relative h-12 w-16 rounded overflow-hidden">
-                        <Image src={vehicle.images[0]} alt={vehicle.model} fill className="object-cover" sizes="64px" />
+                        <Image src={vehicle.images[0]} alt={vehicle.model} fill className="object-cover" sizes="64px" unoptimized />
                       </div>
                       <div>
                         <div className="font-bold" style={{ color: "var(--text-primary)" }}>{vehicle.make} {vehicle.model}</div>
@@ -297,7 +296,7 @@ export default function InventoryAdmin() {
                 <div className="flex flex-wrap gap-3 mb-3">
                   {form.images.map((img, i) => (
                     <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border group" style={{ borderColor: "var(--border-primary)" }}>
-                      <Image src={img} alt={`${i + 1}`} fill className="object-cover" sizes="96px" />
+                      <Image src={img} alt={`${i + 1}`} fill className="object-cover" sizes="96px" unoptimized />
                       <button onClick={() => removeImage(i)} className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/70 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X className="h-3 w-3 text-white" /></button>
                     </div>
                   ))}

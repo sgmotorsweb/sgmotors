@@ -1,24 +1,26 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
-
-const DATA_FILE = path.join(process.cwd(), "data", "settings.json");
+import { getSupabaseAdmin } from "@/lib/supabase-server";
 
 export async function GET() {
-  try {
-    const content = await fs.readFile(DATA_FILE, "utf-8");
-    return NextResponse.json(JSON.parse(content));
-  } catch {
-    return NextResponse.json({ error: "Impossible de lire les paramètres" }, { status: 500 });
+  const supabaseAdmin = getSupabaseAdmin();
+  const { data, error } = await supabaseAdmin.from("settings").select("data").eq("id", 1).single();
+  if (error && error.code !== "PGRST116") {
+    return NextResponse.json({ data: {}, error: error.message }, { status: 500 });
   }
+  return NextResponse.json({ data: data?.data || {} });
 }
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const data = await request.json();
-    await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Impossible d'enregistrer les paramètres" }, { status: 500 });
+    const supabaseAdmin = getSupabaseAdmin();
+    const body = await req.json();
+    const { data, error } = await supabaseAdmin.from("settings").upsert(
+      { id: 1, data: body, updated_at: new Date().toISOString() },
+      { onConflict: "id" }
+    ).select().single();
+    if (error) throw error;
+    return NextResponse.json({ data: data.data });
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }

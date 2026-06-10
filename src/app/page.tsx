@@ -4,13 +4,13 @@ import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, Gauge, Fuel, Cog, X, ArrowRight, ChevronDown, SlidersHorizontal, ChevronUp } from "lucide-react";
-import { getVehicles } from "@/lib/vehicles";
+import { getVehicles, fetchVehicles } from "@/lib/vehicles";
 import type { VehicleData } from "@/lib/vehicles";
 
 const PRICE_MIN = 0;
 const PRICE_MAX = 200000;
 const currentYear = new Date().getFullYear();
-const YEARS = ["Toutes années", ...Array.from({ length: currentYear - 1999 }, (_, i) => String(currentYear - i))];
+const YEARS = ["", ...Array.from({ length: currentYear - 1999 }, (_, i) => String(currentYear - i))];
 const KM_RANGES = [
   { label: "Kilométrage", max: Infinity },
   { label: "< 10 000 km", max: 10000 },
@@ -48,15 +48,15 @@ export default function CataloguePage() {
   const [make, setMake] = useState("");
   const [model, setModel] = useState("");
   const [transmission, setTransmission] = useState("");
-  const [priceMin, setPriceMin] = useState(PRICE_MIN);
-  const [priceMax, setPriceMax] = useState(PRICE_MAX);
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
   const [kmRange, setKmRange] = useState(KM_RANGES[0]);
   const [year, setYear] = useState("");
   const [sort, setSort] = useState<SortOption>("price_asc");
   const [showFilters, setShowFilters] = useState(true);
 
   useEffect(() => {
-    setVehicles(getVehicles());
+    fetchVehicles().then(setVehicles);
   }, []);
 
   const MAKES = ["", ...Array.from(new Set(vehicles.map((v) => v.make))).sort()];
@@ -69,9 +69,9 @@ export default function CataloguePage() {
 
   const handleMakeChange = (val: string) => { setMake(val); setModel(""); };
 
-  const activeFilterCount = [!!make, !!model, !!transmission, priceMin > PRICE_MIN || priceMax < PRICE_MAX, kmRange.label !== "Kilométrage", !!year].filter(Boolean).length;
+  const activeFilterCount = [!!make, !!model, !!transmission, !!priceMin || !!priceMax, kmRange.label !== "Kilométrage", !!year].filter(Boolean).length;
 
-  const clearFilters = () => { setSearch(""); setMake(""); setModel(""); setTransmission(""); setPriceMin(PRICE_MIN); setPriceMax(PRICE_MAX); setKmRange(KM_RANGES[0]); setYear(""); setSort("price_asc"); };
+  const clearFilters = () => { setSearch(""); setMake(""); setModel(""); setTransmission(""); setPriceMin(""); setPriceMax(""); setKmRange(KM_RANGES[0]); setYear(""); setSort("price_asc"); };
 
   const filtered = useMemo(() => {
     let results = vehicles.filter((v) => {
@@ -80,7 +80,7 @@ export default function CataloguePage() {
         (!make || v.make === make) &&
         (!model || v.model === model) &&
         (!transmission || v.transmission === transmission) &&
-        v.price >= priceMin && v.price <= priceMax &&
+        v.price >= (Number(priceMin) || PRICE_MIN) && v.price <= (Number(priceMax) || PRICE_MAX) &&
         v.mileage <= kmRange.max &&
         (!year || String(v.year) === year);
     });
@@ -127,16 +127,17 @@ export default function CataloguePage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-3 pt-3 border-t" style={{ borderColor: "var(--border-primary)" }}>
               <SelectBox value={make} onChange={handleMakeChange}>{MAKES.map((m) => <option key={m} value={m}>{m || "Marques"}</option>)}</SelectBox>
               <SelectBox value={model} onChange={setModel}>{availableModels.map((m) => <option key={m} value={m}>{m || "Modèles"}</option>)}</SelectBox>
-              <div>
-                <input type="number" min={PRICE_MIN} max={priceMax} value={priceMin}
-                  onChange={(e) => setPriceMin(Math.max(PRICE_MIN, Math.min(Number(e.target.value) || 0, priceMax)))}
+              <div className="flex items-center gap-1.5">
+                <input type="number" min={PRICE_MIN} max={priceMax || PRICE_MAX} value={priceMin}
+                  onChange={(e) => setPriceMin(e.target.value)}
                   placeholder="Prix minimum"
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition mb-1.5"
+                  className="w-full min-w-0 px-2.5 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
                   style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
-                <input type="number" min={priceMin} max={PRICE_MAX} value={priceMax}
-                  onChange={(e) => setPriceMax(Math.max(Number(e.target.value) || 0, priceMin))}
+                <span className="shrink-0 text-xs" style={{ color: "var(--text-muted)" }}>—</span>
+                <input type="number" min={priceMin || PRICE_MIN} max={PRICE_MAX} value={priceMax}
+                  onChange={(e) => setPriceMax(e.target.value)}
                   placeholder="Prix maximum"
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
+                  className="w-full min-w-0 px-2.5 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
                   style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
               </div>
               <SelectBox value={kmRange.label} onChange={(v) => setKmRange(KM_RANGES.find((k) => k.label === v) || KM_RANGES[0])}>{KM_RANGES.map((k) => <option key={k.label} value={k.label}>{k.label}</option>)}</SelectBox>
@@ -163,7 +164,7 @@ export default function CataloguePage() {
                   className="group flex flex-col rounded-2xl overflow-hidden border transition-all duration-300"
                   style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }}>
                   <div className="relative aspect-[16/10] overflow-hidden">
-                    <Image src={vehicle.images[0]} alt={`${vehicle.make} ${vehicle.model} - ${vehicle.year}`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                    <Image src={vehicle.images[0]} alt={`${vehicle.make} ${vehicle.model} - ${vehicle.year}`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" unoptimized />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                     <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
                       <span className="px-2 py-1 backdrop-blur-md text-white text-xs font-bold rounded-full border border-white/30" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>{vehicle.year}</span>

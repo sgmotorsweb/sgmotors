@@ -33,17 +33,16 @@ export default function CallbackModal({
     return e;
   };
 
-  const saveLocalMessage = (data: typeof form) => {
+  const saveLocalMessage = async (data: typeof form) => {
     try {
-      const stored = localStorage.getItem("sgmotors_messages");
-      const messages = stored ? JSON.parse(stored) : [];
-      messages.unshift({
-        id: `msg_${Date.now()}`,
-        type: "callback",
-        nom: data.nom, prenom: data.prenom, telephone: data.telephone, email: data.email,
-        vehicule: vehicule, message: data.message, date: new Date().toISOString(), status: "non lu",
+      await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "callback",
+          data: { nom: data.nom, prenom: data.prenom, telephone: data.telephone, email: data.email, vehicule, message: data.message },
+        }),
       });
-      localStorage.setItem("sgmotors_messages", JSON.stringify(messages));
     } catch {}
   };
 

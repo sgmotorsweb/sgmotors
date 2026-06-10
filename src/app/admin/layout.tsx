@@ -26,23 +26,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [pathname, router]);
 
   useEffect(() => {
-    const updateUnread = () => {
+    const updateUnread = async () => {
       try {
-        const stored = localStorage.getItem("sgmotors_messages");
-        if (stored) {
-          const msgs = JSON.parse(stored);
-          const unread = msgs.filter((m: { status: string }) => m.status === "non lu").length;
-          setUnreadCount(unread);
+        const res = await fetch("/api/messages");
+        if (res.ok) {
+          const json = await res.json();
+          const msgs: { read: boolean }[] = json.data || [];
+          setUnreadCount(msgs.filter((m) => !m.read).length);
         }
       } catch {}
     };
     updateUnread();
-    window.addEventListener("storage", updateUnread);
-    const interval = setInterval(updateUnread, 3000);
-    return () => {
-      window.removeEventListener("storage", updateUnread);
-      clearInterval(interval);
-    };
+    const interval = setInterval(updateUnread, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleLogout = () => {

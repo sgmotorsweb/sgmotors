@@ -1,7 +1,6 @@
 "use client";
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { getStats } from "@/lib/stats";
 
 const DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
@@ -15,43 +14,20 @@ function getLast7Days() {
   return dates;
 }
 
-function getLast4Weeks() {
-  const weeks = [];
-  for (let i = 3; i >= 0; i--) {
-    weeks.push(`S${new Date().getWeek() - i}`);
-  }
-  return weeks;
-}
-
-declare global {
-  interface Date {
-    getWeek(): number;
-  }
-}
-
-Date.prototype.getWeek = function () {
-  const d = new Date(this);
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
-  const week1 = new Date(d.getFullYear(), 0, 4);
-  return 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
-};
-
 function getCSSVar(name: string): string {
   if (typeof document === 'undefined') return '#111827';
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#111827';
 }
 
-export function ViewsChart() {
+export function ViewsChart({ dailyStats }: { dailyStats: Record<string, { views?: number }> }) {
   const bgCard = getCSSVar('--bg-card');
   const borderColor = getCSSVar('--border-primary');
-  const stats = getStats();
 
   const last7 = getLast7Days();
-  const viewData = last7.map((date, i) => {
-    const dayStats = stats.dailyStats[date];
-    return { name: DAYS[i], views: dayStats?.views || 0 };
-  });
+  const viewData = last7.map((date, i) => ({
+    name: DAYS[i],
+    views: dailyStats[date]?.views || 0,
+  }));
 
   return (
     <div className="h-[300px] w-full">
@@ -72,36 +48,31 @@ export function ViewsChart() {
   );
 }
 
-export function LeadsChart() {
+export function LeadsChart({ dailyStats }: { dailyStats: Record<string, { callbacks?: number; reprises?: number }> }) {
   const bgCard = getCSSVar('--bg-card');
   const borderColor = getCSSVar('--border-primary');
-  const stats = getStats();
 
   const last7 = getLast7Days();
-  const weeks: Record<string, { callbacks: number; reprises: number }> = {};
+  const weekCounts: Record<string, number> = {};
   last7.forEach((date) => {
-    const d = new Date(date);
-    const weekNum = d.getWeek();
-    const key = `S${weekNum}`;
-    if (!weeks[key]) weeks[key] = { callbacks: 0, reprises: 0 };
-    const dayStats = stats.dailyStats[date];
-    if (dayStats) {
-      weeks[key].callbacks += dayStats.callbacks || 0;
-      weeks[key].reprises += dayStats.reprises || 0;
-    }
+    const day = new Date(date);
+    const weekStart = new Date(day);
+    weekStart.setDate(day.getDate() - day.getDay() + 1);
+    const key = weekStart.toISOString().slice(0, 10);
+    const ds = dailyStats[date];
+    weekCounts[key] = (weekCounts[key] || 0) + (ds?.callbacks || 0) + (ds?.reprises || 0);
   });
 
-  const leadData = Object.entries(weeks).map(([name, vals]) => ({
-    name,
-    leads: vals.callbacks + vals.reprises,
+  const leadData = Object.entries(weekCounts).map(([date, leads], i) => ({
+    name: `S${i + 1}`,
+    leads,
   }));
 
   if (leadData.length === 0) {
-    const dummy = getLast4Weeks();
     return (
       <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={dummy.map((n) => ({ name: n, leads: 0 }))} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <LineChart data={[{ name: "S1", leads: 0 }]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={borderColor} vertical={false} />
             <XAxis dataKey="name" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
             <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />

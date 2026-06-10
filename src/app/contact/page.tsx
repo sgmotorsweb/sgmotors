@@ -32,17 +32,16 @@ export default function ContactPage() {
     if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: "" });
   };
 
-  const saveLocalMessage = () => {
+  const saveLocalMessage = async () => {
     try {
-      const stored = localStorage.getItem("sgmotors_messages");
-      const messages = stored ? JSON.parse(stored) : [];
-      messages.unshift({
-        id: `msg_${Date.now()}`,
-        type: "contact",
-        nom: form.nom, prenom: form.prenom, telephone: form.telephone, email: form.email,
-        sujet: form.sujet, message: form.message, date: new Date().toISOString(), status: "non lu",
+      await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "contact",
+          data: { nom: form.nom, prenom: form.prenom, telephone: form.telephone, email: form.email, sujet: form.sujet, message: form.message },
+        }),
       });
-      localStorage.setItem("sgmotors_messages", JSON.stringify(messages));
     } catch {}
   };
 

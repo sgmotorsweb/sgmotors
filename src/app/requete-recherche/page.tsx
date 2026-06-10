@@ -26,19 +26,16 @@ export default function RequeteRecherchePage() {
     return e;
   };
 
-  const saveLocalMessage = () => {
+  const saveLocalMessage = async () => {
     try {
-      const stored = localStorage.getItem("sgmotors_messages");
-      const messages = stored ? JSON.parse(stored) : [];
-      messages.unshift({
-        id: `msg_${Date.now()}`,
-        type: "recherche",
-        nom: form.nom, prenom: form.prenom, telephone: form.telephone, email: form.email,
-        vehicule: `${form.marque} ${form.modele || ""}`.trim(),
-        message: `Kilométrage max: ${form.km || "Non précisé"} km\n\nDescription:\n${form.description || "Aucune"}`,
-        date: new Date().toISOString(), status: "non lu",
+      await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "recherche",
+          data: { nom: form.nom, prenom: form.prenom, telephone: form.telephone, email: form.email, marque: form.marque, modele: form.modele, km: form.km, description: form.description },
+        }),
       });
-      localStorage.setItem("sgmotors_messages", JSON.stringify(messages));
     } catch {}
   };
 
