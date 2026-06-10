@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  --color-sg-accent-blue: #0066ff;
+  --color-sg-accent-cyan: #00d2ff;
+  --color-whatsapp: #25D366;
+}
+
+:root,
+[data-theme="light"] {
+  --bg-primary: #f8f9fa;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f3f5;
+  --bg-card: #ffffff;
+  --bg-elevated: #ffffff;
+  --text-primary: #1a1a2e;
+  --text-secondary: #495057;
+  --text-muted: #6c757d;
+  --border-primary: #e9ecef;
+  --border-subtle: #dee2e6;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --hover-bg: #f1f3f5;
+  --badge-bg: rgba(0, 102, 255, 0.08);
+  --badge-text: #0066ff;
+  --gradient-from: #ffffff;
+  --gradient-to: #f8f9fa;
+  --overlay-gradient: from-white/60 to-transparent;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0a0f1d;
+  --bg-secondary: #111827;
+  --bg-tertiary: #1f2937;
+  --bg-card: #111827;
+  --bg-elevated: #1a2333;
+  --text-primary: #ffffff;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --border-primary: #1f2937;
+  --border-subtle: #374151;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
+  --hover-bg: #1f2937;
+  --badge-bg: rgba(0, 102, 255, 0.15);
+  --badge-text: #00d2ff;
+  --gradient-from: #0d1526;
+  --gradient-to: #0a0f1d;
+  --overlay-gradient: from-[#111827]/60 to-transparent;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.bg-primary { background-color: var(--bg-primary); }
+.bg-secondary { background-color: var(--bg-secondary); }
+.bg-tertiary { background-color: var(--bg-tertiary); }
+.bg-card { background-color: var(--bg-card); }
+.text-default { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+.border-default { border-color: var(--border-primary); }
+.border-subtle { border-color: var(--border-subtle); }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-sg-accent-blue); }
