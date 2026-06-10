@@ -31,19 +31,25 @@ export interface VehicleData {
   views?: number;
 }
 
+function normalizeVehicle(v: any): VehicleData {
+  if (typeof v.options === "string") { try { v.options = JSON.parse(v.options); } catch { v.options = []; } }
+  if (typeof v.images === "string") { try { v.images = JSON.parse(v.images); } catch { v.images = []; } }
+  return v;
+}
+
 export async function fetchVehicles(): Promise<VehicleData[]> {
   try {
     const res = await fetch("/api/vehicles");
     if (res.ok) {
       const json = await res.json();
-      const data = json.data || [];
+      const data = (json.data || []).map(normalizeVehicle);
       if (typeof window !== "undefined") {
         localStorage.setItem("sgmotors_vehicles", JSON.stringify(data));
       }
       return data;
     }
   } catch {}
-  return getVehicles();
+  return getVehicles().map(normalizeVehicle);
 }
 
 export async function fetchVehicleById(id: string): Promise<VehicleData | null> {

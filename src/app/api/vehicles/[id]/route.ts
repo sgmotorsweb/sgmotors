@@ -6,6 +6,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const { id } = await params;
   const { data, error } = await supabaseAdmin.from("vehicles").select("*").eq("id", id).single();
   if (error) return NextResponse.json({ data: null, error: error.message }, { status: 404 });
+  if (typeof data.options === "string") { try { data.options = JSON.parse(data.options); } catch { data.options = []; } }
+  if (typeof data.images === "string") { try { data.images = JSON.parse(data.images); } catch { data.images = []; } }
   return NextResponse.json({ data });
 }
 

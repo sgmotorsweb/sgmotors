@@ -5,6 +5,10 @@ export async function GET() {
   const supabaseAdmin = getSupabaseAdmin();
   const { data, error } = await supabaseAdmin.from("vehicles").select("*").order("created_at", { ascending: false });
   if (error) return NextResponse.json({ data: [], error: error.message }, { status: 500 });
+  for (const v of data) {
+    if (typeof v.options === "string") { try { v.options = JSON.parse(v.options); } catch { v.options = []; } }
+    if (typeof v.images === "string") { try { v.images = JSON.parse(v.images); } catch { v.images = []; } }
+  }
   return NextResponse.json({ data });
 }
 
