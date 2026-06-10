@@ -7,14 +7,14 @@ import { getSettings } from "@/lib/settings";
 export default function ContactPage() {
   const [settings, setSettings] = useState({ phone: "", email: "", address: "" });
   const [form, setForm] = useState({ nom: "", prenom: "", email: "", telephone: "", sujet: "", message: "" });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const s = getSettings();
     setSettings({ phone: s.phone || "", email: s.email || "", address: s.address || "" });
   }, []);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -31,12 +31,33 @@ export default function ContactPage() {
     if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: "" });
   };
 
+  const saveLocalMessage = () => {
+    try {
+      const stored = localStorage.getItem("sgmotors_messages");
+      const messages = stored ? JSON.parse(stored) : [];
+      messages.unshift({
+        id: `msg_${Date.now()}`,
+        type: "contact",
+        nom: form.nom, prenom: form.prenom, telephone: form.telephone, email: form.email,
+        sujet: form.sujet, message: form.message, date: new Date().toISOString(), status: "non lu",
+      });
+      localStorage.setItem("sgmotors_messages", JSON.stringify(messages));
+    } catch {}
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) { setErrors(validationErrors); return; }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    saveLocalMessage();
+    try {
+      await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, recipientEmail: settings.email }),
+      });
+    } catch {}
     setLoading(false);
     setSubmitted(true);
   };

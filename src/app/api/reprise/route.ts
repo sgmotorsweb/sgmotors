@@ -48,12 +48,16 @@ export async function POST(request: Request) {
     if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== "re_placeholder") {
       const { Resend } = await import("resend");
       const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
+      const { error } = await resend.emails.send({
         from: "SG MOTORS <noreply@sgmotors13.com>",
         to: "contact@sgmotors13.com",
         subject: `Reprise - ${marque} ${modele} (${annee}) - ${nom} ${prenom}`,
         text: emailContent,
       });
+
+      if (error) {
+        console.error("Resend error (reprise):", error);
+      }
     }
 
     return NextResponse.json({ success: true, files: photos.length + videos.length });

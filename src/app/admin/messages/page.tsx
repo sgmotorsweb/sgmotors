@@ -5,12 +5,13 @@ import { Inbox, Mail, Phone, Car, CheckCircle, Trash2, Eye, X, MessageSquare } f
 
 interface Message {
   id: string;
-  type: "callback" | "reprise";
+  type: "callback" | "reprise" | "contact";
   nom: string;
   prenom: string;
   telephone: string;
   email: string;
-  vehicule: string;
+  vehicule?: string;
+  sujet?: string;
   marque?: string;
   modele?: string;
   date: string;
@@ -71,13 +72,14 @@ export default function MessagesPage() {
       <div className="border rounded-xl p-4 flex flex-col sm:flex-row gap-4" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }}>
         <div className="flex items-center gap-2">
           <MessageSquare className="h-4 w-4" style={{ color: "var(--text-muted)" }} />
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)}
-            className="border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
-            style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }}>
-            <option>Tous</option>
-            <option value="callback">Appels</option>
-            <option value="reprise">Reprises</option>
-          </select>
+            <select value={filterType} onChange={(e) => setFilterType(e.target.value)}
+              className="border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
+              style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }}>
+              <option>Tous</option>
+              <option value="callback">Appels</option>
+              <option value="reprise">Reprises</option>
+              <option value="contact">Contact</option>
+            </select>
         </div>
         <div className="flex items-center gap-2">
           <Eye className="h-4 w-4" style={{ color: "var(--text-muted)" }} />

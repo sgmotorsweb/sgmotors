@@ -23,12 +23,16 @@ export async function POST(request: Request) {
         Message : ${message || "Aucun message"}
       `;
 
-      await resend.emails.send({
+      const { error } = await resend.emails.send({
         from: "SG MOTORS <noreply@sgmotors13.com>",
         to: "contact@sgmotors13.com",
         subject: `Rappel demandé - ${nom} ${prenom}`,
         text: emailContent,
       });
+
+      if (error) {
+        console.error("Resend error (callback):", error);
+      }
     }
 
     return NextResponse.json({ success: true });
