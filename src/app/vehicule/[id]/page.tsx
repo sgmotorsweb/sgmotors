@@ -89,17 +89,16 @@ export default async function VehiculeDetail({ params }: { params: Promise<{ id:
                 </h2>
                 <dl className="grid grid-cols-2 sm:grid-cols-3 gap-y-5 gap-x-4">
                   {[
+                    { icon: Calendar, label: "Année", value: String(vehicle.year) },
                     vehicle.finition && { icon: Award, label: "Finition", value: vehicle.finition },
-                    vehicle.firstRegDate && { icon: Calendar, label: "1re mise en circ.", value: vehicle.firstRegDate },
                     { icon: Gauge, label: "Kilométrage", value: `${vehicle.mileage.toLocaleString("fr-FR")} km` },
                     { icon: Fuel, label: "Carburant", value: vehicle.fuel },
                     { icon: Cog, label: "Boîte", value: vehicle.transmission },
                     vehicle.vehicleType && { icon: CarFront, label: "Type", value: vehicle.vehicleType },
                     vehicle.color && { icon: Palette, label: "Couleur", value: vehicle.color },
-                    vehicle.power && { icon: Cog, label: "Puissance DIN", value: vehicle.power },
+                    vehicle.power && { icon: Cog, label: "Puissance DIN", value: vehicle.power.match(/^\d+/) ? `${vehicle.power} ch` : vehicle.power },
                     vehicle.powerFiscal && { icon: Cog, label: "Puiss. fiscale", value: `${vehicle.powerFiscal} CV` },
-                    vehicle.consumption && { icon: Cog, label: "Consommation", value: vehicle.consumption },
-                    vehicle.co2 && { icon: Cog, label: "CO₂", value: vehicle.co2 },
+                    vehicle.consumption && { icon: Cog, label: "Consommation", value: vehicle.consumption.match(/[\d,.]+\s*L\s*\/?\s*100\s*km/i) ? vehicle.consumption : `${vehicle.consumption} L/100km` },
                     { icon: Cog, label: "Crit'Air", value: String(vehicle.critAir) },
                     { icon: Cog, label: "Portes", value: String(vehicle.doors) },
                     { icon: Cog, label: "Places", value: String(vehicle.seats) },
