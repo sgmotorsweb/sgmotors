@@ -214,7 +214,7 @@ export default function SettingsPage() {
               </div>
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Adresse</label>
-                <input type="text" value={settings.address} onChange={(e) => setSettings({ ...settings, address: e.target.value })} placeholder="Paris"
+                <input type="text" value={settings.address} onChange={(e) => setSettings({ ...settings, address: e.target.value })} placeholder="Aubagne"
                   className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
                   style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
               </div>

@@ -1,15 +1,21 @@
-import { Scale, Construction } from "lucide-react";
+import type { Metadata } from "next";
+import MentionsLegalesClient from "./MentionsLegalesClient";
 
-export default function MentionsLegales() {
-  return (
-    <div className="flex flex-col flex-1 bg-primary items-center justify-center py-24 px-4">
-      <div className="border rounded-2xl p-12 text-center max-w-md w-full" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }}>
-        <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: "var(--badge-bg)" }}>
-          <Construction className="h-10 w-10" style={{ color: "var(--color-sg-accent-blue)" }} />
-        </div>
-        <h1 className="text-2xl font-bold mb-3" style={{ color: "var(--text-primary)" }}>Mentions Légales</h1>
-        <p style={{ color: "var(--text-muted)" }}>Page en cours de construction.</p>
-      </div>
-    </div>
-  );
+export const metadata: Metadata = {
+  title: "Mentions Légales | SG MOTORS",
+  description: "Retrouvez les mentions légales du site SG MOTORS, entreprise spécialisée dans l'achat, la vente et le dépôt-vente de véhicules à Aubagne (13400).",
+  alternates: {
+    canonical: "https://www.sgmotors.fr/mentions-legales",
+  },
+  openGraph: {
+    title: "Mentions Légales | SG MOTORS",
+    description: "Informations légales concernant l'éditeur et l'hébergeur du site de SG MOTORS à Aubagne.",
+    url: "https://www.sgmotors.fr/mentions-legales",
+    type: "website",
+    locale: "fr_FR",
+  },
+};
+
+export default function Page() {
+  return <MentionsLegalesClient />;
 }

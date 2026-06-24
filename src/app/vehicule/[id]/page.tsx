@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   return {
     title: `${vehicle.make} ${vehicle.model} ${vehicle.year} - ${vehicle.price.toLocaleString("fr-FR")} € | SG MOTORS`,
-    description: `Découvrez la ${vehicle.make} ${vehicle.model} ${vehicle.year} à ${vehicle.price.toLocaleString("fr-FR")} €. ${vehicle.mileage.toLocaleString("fr-FR")} km, ${vehicle.fuel}, ${vehicle.transmission}. Garage SG MOTORS - Paris.`,
+    description: `Découvrez la ${vehicle.make} ${vehicle.model} ${vehicle.year} à ${vehicle.price.toLocaleString("fr-FR")} €. ${vehicle.mileage.toLocaleString("fr-FR")} km, ${vehicle.fuel}, ${vehicle.transmission}. Garage SG MOTORS - Aubagne.`,
     openGraph: {
       title: `${vehicle.make} ${vehicle.model} ${vehicle.year} | SG MOTORS`,
       description: `${vehicle.price.toLocaleString("fr-FR")} € - ${vehicle.mileage.toLocaleString("fr-FR")} km - ${vehicle.fuel}`,

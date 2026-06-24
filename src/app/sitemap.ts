@@ -1,19 +1,7 @@
 import { MetadataRoute } from "next";
+import { getSupabaseAdmin } from "@/lib/supabase-server";
 
-const VEHICLES = [
-  { id: "1", make: "Porsche", model: "911 Carrera S", year: 2021 },
-  { id: "2", make: "Audi", model: "RS e-tron GT", year: 2023 },
-  { id: "3", make: "Mercedes-Benz", model: "AMG GT 63 S", year: 2022 },
-  { id: "4", make: "BMW", model: "M4 Competition", year: 2022 },
-  { id: "5", make: "Tesla", model: "Model S Plaid", year: 2023 },
-  { id: "6", make: "Ferrari", model: "Roma", year: 2021 },
-  { id: "7", make: "Lamborghini", model: "Huracán EVO", year: 2022 },
-  { id: "8", make: "Range Rover", model: "Sport HSE Dynamic", year: 2023 },
-  { id: "9", make: "BMW", model: "X5 M Competition", year: 2021 },
-  { id: "10", make: "Audi", model: "R8 V10 Plus", year: 2020 },
-];
-
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://www.sgmotors.fr";
 
   const staticPages = [
@@ -27,12 +15,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/rgpd`, lastModified: new Date(), changeFrequency: "yearly" as const, priority: 0.3 },
   ];
 
-  const vehiclePages = VEHICLES.map((v) => ({
-    url: `${baseUrl}/vehicule/${v.id}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.9,
-  }));
+  let vehiclePages: MetadataRoute.Sitemap = [];
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data: vehicles } = await supabaseAdmin
+      .from("vehicles")
+      .select("id, updated_at")
+      .eq("status", "En ligne");
+
+    if (vehicles && vehicles.length > 0) {
+      vehiclePages = vehicles.map((v) => ({
+        url: `${baseUrl}/vehicule/${v.id}`,
+        lastModified: v.updated_at ? new Date(v.updated_at) : new Date(),
+        changeFrequency: "weekly" as const,
+        priority: 0.9,
+      }));
+    }
+  } catch (e) {
+    console.error("Error generating dynamic sitemap vehicle pages:", e);
+  }
 
   return [...staticPages, ...vehiclePages];
 }

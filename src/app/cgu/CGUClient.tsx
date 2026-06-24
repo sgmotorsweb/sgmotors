@@ -3,7 +3,7 @@
 import { Info, Car, FileText, AlertTriangle, UserCheck, Scale } from "lucide-react";
 import LegalLayout from "@/components/LegalLayout";
 
-export default function CGU() {
+export default function CGUClient() {
   const sections = [
     {
       id: "objet",
@@ -128,4 +128,3 @@ export default function CGU() {
     />
   );
 }
-
