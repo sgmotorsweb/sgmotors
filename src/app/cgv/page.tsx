@@ -6,13 +6,17 @@ import { fetchServerSettings } from "@/lib/settings";
 import LegalLayout from "@/components/LegalLayout";
 
 export default function CGV() {
-  const [settings, setSettings] = useState({ phone: "", email: "", address: "" });
+  const [settings, setSettings] = useState({
+    phone: "",
+    email: "sgmotorsweb@gmail.com",
+    address: "Actiburo 3 Bâtiment A, 100 Chemin de l'Aumone-Vieille, 13400 Aubagne",
+  });
 
   useEffect(() => {
     fetchServerSettings().then((s) => {
       setSettings({
         phone: s.phone || "",
-        email: s.email || "",
+        email: s.email || "sgmotorsweb@gmail.com",
         address: s.address || "Actiburo 3 Bâtiment A, 100 Chemin de l'Aumone-Vieille, 13400 Aubagne",
       });
     });
@@ -68,7 +72,7 @@ export default function CGV() {
       content: (
         <div className="space-y-3">
           <p>
-            Les prix des véhicules présentés dans notre catalogue ou sur nos bons de commande sont indiqués en <strong>Euros</strong> et s&apos;entendent 
+            Les prix des véhicules présentés dans notre catalogue ou sur nos bons de commande sont indiqués en <strong>Euros</strong>{" "}et s&apos;entendent
             <strong> toutes taxes comprises (TTC)</strong>.
           </p>
           <p>
@@ -102,7 +106,6 @@ export default function CGV() {
           <ul className="list-disc pl-5 space-y-2">
             <li><strong>Virement bancaire :</strong> Mode de paiement à privilégier. Le virement doit provenir d&apos;un établissement bancaire agréé et le montant doit être crédité sur le compte de SG MOTORS au moins 24 heures avant l&apos;enlèvement.</li>
             <li><strong>Chèque de banque :</strong> Uniquement les chèques émis par une banque française. Une copie du chèque doit être transmise à SG MOTORS au moins 48 heures ouvrées avant la livraison afin de permettre la vérification de son authenticité auprès de la banque émettrice.</li>
-            <li><strong>Espèces :</strong> Uniquement pour les règlements ne dépassant pas le plafond légal en vigueur (soit un montant maximum de 1 000 Euros pour les particuliers domiciliés fiscalement en France).</li>
           </ul>
           <p className="mt-2 text-red-500/90 dark:text-red-400 font-semibold">
             Aucun véhicule ne sera remis au Client sans la confirmation définitive du paiement intégral.
@@ -202,8 +205,8 @@ export default function CGV() {
       content: (
         <div className="space-y-3">
           <p>
-            En cas de réclamation ou de litige, le Client s&apos;engage à contacter en priorité le service commercial de SG MOTORS par e-mail à l&apos;adresse 
-            <strong> {settings.email}</strong> ou par courrier postal au siège de l&apos;établissement afin de rechercher une solution amiable.
+            En cas de réclamation ou de litige, le Client s&apos;engage à contacter en priorité le service commercial de SG MOTORS par e-mail à l&apos;adresse{" "}
+            <strong>{settings.email}</strong>{" "}ou par courrier postal au siège de l&apos;établissement afin de rechercher une solution amiable.
           </p>
           <p>
             <strong>Médiation :</strong> Conformément aux dispositions du Code de la consommation, le Client consommateur est informé qu&apos;il a la 

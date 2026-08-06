@@ -75,6 +75,9 @@ export default function Footer() {
     phone: "", email: "", address: "", hours: "",
   } as AppSettings;
 
+  const address = s.address || "Actiburo 3 Bâtiment A, 100 Chemin de l'Aumone-Vieille, 13400 Aubagne";
+  const email = s.email || "sgmotorsweb@gmail.com";
+
   const socialLinks = [
     { url: s.instagram, label: "Instagram", icon: IconInstagram },
     { url: s.facebook, label: "Facebook", icon: IconFacebook },
@@ -133,7 +136,7 @@ export default function Footer() {
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--color-sg-accent-blue)" }} />
-                <span className="text-sm" style={{ color: "var(--text-muted)" }}>{s.address || "—"}</span>
+                <span className="text-sm" style={{ color: "var(--text-muted)" }}>{address}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="h-5 w-5 shrink-0" style={{ color: "var(--color-sg-accent-blue)" }} />
@@ -141,7 +144,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="h-5 w-5 shrink-0" style={{ color: "var(--color-sg-accent-blue)" }} />
-                <a href={`mailto:${s.email}`} className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>{s.email || "—"}</a>
+                <a href={`mailto:${email}`} className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>{email}</a>
               </li>
               <li className="flex items-start gap-3">
                 <Clock className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--color-sg-accent-blue)" }} />

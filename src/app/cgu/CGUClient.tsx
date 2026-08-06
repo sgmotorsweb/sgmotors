@@ -13,7 +13,7 @@ export default function CGUClient() {
         <div className="space-y-2">
           <p>
             Les présentes Conditions Générales d&apos;Utilisation (ci-après « CGU ») ont pour objet de définir les modalités 
-            et conditions d&apos;accès et d&apos;utilisation du site internet <strong>sgmotors.fr</strong> (ci-après « le Site ») 
+            et conditions d&apos;accès et d&apos;utilisation du site internet <strong>sgmotors13.com</strong> (ci-après « le Site ») 
             et des services qui y sont proposés par la société <strong>SG MOTORS</strong>.
           </p>
           <p>
@@ -68,7 +68,7 @@ export default function CGUClient() {
       content: (
         <div className="space-y-3">
           <p>
-            <strong>SG MOTORS</strong> met en œuvre des moyens raisonnables pour s&apos;assurer que les informations diffusées sur le Site 
+            <strong>SG MOTORS</strong>{" "}met en œuvre des moyens raisonnables pour s&apos;assurer que les informations diffusées sur le Site
             (notamment les prix, options, équipements et kilométrages des véhicules) sont exactes et à jour. Néanmoins, les fiches de véhicules 
             ainsi que les visuels sont fournis à titre purement indicatif et ne revêtent aucun caractère contractuel.
           </p>
