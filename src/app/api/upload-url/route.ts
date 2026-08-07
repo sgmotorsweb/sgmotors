@@ -9,7 +9,6 @@ async function ensureBucket() {
   if (!existing) {
     const { error } = await supabaseAdmin.storage.createBucket(BUCKET, {
       public: true,
-      fileSizeLimit: "100MB",
     });
     if (error && !/already exists/i.test(error.message)) {
       throw new Error(`Bucket creation failed: ${error.message}`);
