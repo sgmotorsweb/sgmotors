@@ -157,7 +157,7 @@ export default function InventoryAdmin() {
     }
     setFormError("");
     setSaving(true);
-    const images = form.images.length > 0 ? form.images : ["https://images.unsplash.com/photo-1503376713581-7c0147cb2321?auto=format&fit=crop&q=80&w=1200"];
+    const images = form.images.length > 0 ? form.images : ["https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=1200"];
     const vehicle: VehicleData = {
       id: editing ? editing.id : String(Date.now()),
       make: form.make, model: form.model, finition: form.finition || undefined,
