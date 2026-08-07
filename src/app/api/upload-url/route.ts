@@ -7,10 +7,13 @@ async function ensureBucket() {
   const supabaseAdmin = getSupabaseAdmin();
   const { data: existing } = await supabaseAdmin.storage.getBucket(BUCKET);
   if (!existing) {
-    await supabaseAdmin.storage.createBucket(BUCKET, {
+    const { error } = await supabaseAdmin.storage.createBucket(BUCKET, {
       public: true,
       fileSizeLimit: "100MB",
     });
+    if (error && !/already exists/i.test(error.message)) {
+      throw new Error(`Bucket creation failed: ${error.message}`);
+    }
   }
 }
 
@@ -28,6 +31,7 @@ export async function POST(req: Request) {
     if (error) throw error;
     return NextResponse.json({ bucket: BUCKET, path, token: data.token });
   } catch (err) {
+    console.error("upload-url error:", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
