@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Plus, Search, Edit, Trash2, Eye, X, Upload, Copy, Film } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, X, Upload, Copy, Film, Loader2 } from "lucide-react";
 import Image from "next/image";
 import type { VehicleData } from "@/lib/vehicles";
 import { fetchVehicles, saveVehicle, deleteVehicle, updateVehicleStatus } from "@/lib/vehicles";
+import { uploadFile } from "@/lib/upload";
 import { MAKES, getModelsForMake, ENERGY_TYPES, TRANSMISSION_TYPES, VEHICLE_TYPES, DOOR_COUNTS, SEAT_COUNTS, CONDITION_TYPES, CRIT_AIR_STICKERS } from "@/lib/cars-data";
 
 const STATUSES = ["En ligne", "Brouillon", "En préparation", "Réservé", "Vendu"];
@@ -15,26 +16,34 @@ const StatutBadge = ({ status }: { status: string }) => {
   return (<span className="px-2.5 py-1 rounded-full text-xs font-medium border" style={{ backgroundColor: `var(--color-${c}-100)`, color: `var(--color-${c}-600)`, borderColor: `var(--color-${c}-200)` }}>{status}</span>);
 };
 
-const Input = ({ label, val, onChange, placeholder, type = "text", required }: { label: string; val: string; onChange: (v: string) => void; placeholder?: string; type?: string; required?: boolean }) => (
-  <div>
-    <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>{label}{required && <span style={{ color: "var(--color-sg-accent-blue)" }}> *</span>}</label>
-    <input type={type} value={val} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-      className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
-      style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
-  </div>
-);
+const slugify = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/(^-|-$)/g, "").toLowerCase();
 
-const Select = ({ label, val, onChange, options, required }: { label: string; val: string; onChange: (v: string) => void; options: string[]; required?: boolean }) => (
-  <div>
-    <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>{label}{required && <span style={{ color: "var(--color-sg-accent-blue)" }}> *</span>}</label>
-    <select value={val} onChange={(e) => onChange(e.target.value)}
-      className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
-      style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }}>
-      <option value="">Sélectionner...</option>
-      {options.map((o) => <option key={o} value={o}>{o}</option>)}
-    </select>
-  </div>
-);
+const Input = ({ label, val, onChange, placeholder, type = "text", required }: { label: string; val: string; onChange: (v: string) => void; placeholder?: string; type?: string; required?: boolean }) => {
+  const id = `field-${slugify(label)}`;
+  return (
+    <div>
+      <label htmlFor={id} className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>{label}{required && <span style={{ color: "var(--color-sg-accent-blue)" }}> *</span>}</label>
+      <input id={id} name={id} type={type} value={val} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+        className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
+        style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
+    </div>
+  );
+};
+
+const Select = ({ label, val, onChange, options, required }: { label: string; val: string; onChange: (v: string) => void; options: string[]; required?: boolean }) => {
+  const id = `field-${slugify(label)}`;
+  return (
+    <div>
+      <label htmlFor={id} className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>{label}{required && <span style={{ color: "var(--color-sg-accent-blue)" }}> *</span>}</label>
+      <select id={id} name={id} value={val} onChange={(e) => onChange(e.target.value)}
+        className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
+        style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }}>
+        <option value="">Sélectionner...</option>
+        {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </div>
+  );
+};
 
 interface FormState {
   make: string; model: string; finition: string; year: string; firstRegDate: string; price: string; mileage: string;
@@ -59,6 +68,10 @@ export default function InventoryAdmin() {
   const [editing, setEditing] = useState<VehicleData | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm());
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
@@ -73,14 +86,15 @@ export default function InventoryAdmin() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const files = Array.from(e.target.files);
-    Promise.all(files.map((f) => new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.readAsDataURL(f);
-    }))).then((dataUrls) => {
-      setForm((prev) => ({ ...prev, images: [...prev.images, ...dataUrls] }));
-    });
     e.target.value = "";
+    setFormError("");
+    setUploadingImages(true);
+    Promise.all(files.map((f) => uploadFile(f, "images")))
+      .then((urls) => {
+        setForm((prev) => ({ ...prev, images: [...prev.images, ...urls] }));
+      })
+      .catch(() => setFormError("Échec de l'envoi d'une ou plusieurs images. Réessayez."))
+      .finally(() => setUploadingImages(false));
   };
 
   const removeImage = (index: number) => {
@@ -89,12 +103,14 @@ export default function InventoryAdmin() {
 
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setForm((prev) => ({ ...prev, videoUrl: reader.result as string }));
-    };
-    reader.readAsDataURL(e.target.files[0]);
+    const file = e.target.files[0];
     e.target.value = "";
+    setFormError("");
+    setUploadingVideo(true);
+    uploadFile(file, "videos")
+      .then((url) => setForm((prev) => ({ ...prev, videoUrl: url })))
+      .catch(() => setFormError("Échec de l'envoi de la vidéo. Réessayez."))
+      .finally(() => setUploadingVideo(false));
   };
 
   const removeVideo = () => setForm((prev) => ({ ...prev, videoUrl: "" }));
@@ -108,6 +124,7 @@ export default function InventoryAdmin() {
   const openAdd = () => {
     setEditing(null);
     setForm(emptyForm());
+    setFormError("");
     setShowModal(true);
     videoInputRef.current && (videoInputRef.current.value = "");
   };
@@ -123,13 +140,23 @@ export default function InventoryAdmin() {
       options: (v.options || []).join("\n"), videoUrl: v.videoUrl || "",
       images: v.images,
     });
+    setFormError("");
     setShowModal(true);
     fileInputRef.current && (fileInputRef.current.value = "");
     videoInputRef.current && (videoInputRef.current.value = "");
   };
 
   const handleSave = () => {
-    if (!form.make.trim() || !form.model.trim() || !form.year || !form.price) return;
+    if (!form.make.trim() || !form.model.trim() || !form.year || !form.price) {
+      setFormError("Veuillez remplir les champs obligatoires (marque, modèle, année, prix).");
+      return;
+    }
+    if (uploadingImages || uploadingVideo) {
+      setFormError("Merci d'attendre la fin de l'envoi des médias avant d'enregistrer.");
+      return;
+    }
+    setFormError("");
+    setSaving(true);
     const images = form.images.length > 0 ? form.images : ["https://images.unsplash.com/photo-1503376713581-7c0147cb2321?auto=format&fit=crop&q=80&w=1200"];
     const vehicle: VehicleData = {
       id: editing ? editing.id : String(Date.now()),
@@ -145,8 +172,15 @@ export default function InventoryAdmin() {
       videoUrl: form.videoUrl || undefined,
       images, badge: form.badge || undefined, status: form.status, views: editing ? editing.views || 0 : 0,
     };
-    saveVehicle(vehicle).then(refreshVehicles);
-    setShowModal(false);
+    saveVehicle(vehicle).then((ok) => {
+      setSaving(false);
+      if (ok) {
+        refreshVehicles();
+        setShowModal(false);
+      } else {
+        setFormError("Échec de l'enregistrement du véhicule. Vérifiez votre connexion et réessayez.");
+      }
+    });
   };
 
   const handleDelete = (id: string) => { deleteVehicle(id).then(refreshVehicles); setShowDeleteConfirm(null); };
@@ -162,6 +196,7 @@ export default function InventoryAdmin() {
       options: (v.options || []).join("\n"), videoUrl: v.videoUrl || "",
       images: v.images,
     });
+    setFormError("");
     setShowModal(true);
     fileInputRef.current && (fileInputRef.current.value = "");
   };
@@ -190,11 +225,11 @@ export default function InventoryAdmin() {
       <div className="border rounded-xl p-4 flex flex-col sm:flex-row gap-4" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }}>
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5" style={{ color: "var(--text-muted)" }} />
-          <input type="text" placeholder="Rechercher par marque, modèle..." value={search} onChange={(e) => setSearch(e.target.value)}
+          <input id="inventory-search" name="inventory-search" type="text" placeholder="Rechercher par marque, modèle..." value={search} onChange={(e) => setSearch(e.target.value)}
             className="w-full border rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
             style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
         </div>
-        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
+        <select id="inventory-filter-status" name="inventory-filter-status" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
           className="border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition min-w-[150px]"
           style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }}>
           <option>Tous les statuts</option>
@@ -222,7 +257,7 @@ export default function InventoryAdmin() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
                       <div className="relative h-12 w-16 rounded overflow-hidden">
-                        <Image src={vehicle.images[0]} alt={vehicle.model} fill className="object-cover" sizes="64px" unoptimized />
+                        <Image src={vehicle.images[0]} alt={vehicle.model} fill className="object-cover" sizes="64px" />
                       </div>
                       <div>
                         <div className="font-bold" style={{ color: "var(--text-primary)" }}>{vehicle.make} {vehicle.model}</div>
@@ -268,22 +303,28 @@ export default function InventoryAdmin() {
               <button onClick={() => setShowModal(false)} className="p-1 rounded-lg transition-colors" style={{ color: "var(--text-muted)" }}><X className="h-5 w-5" /></button>
             </div>
 
+            {formError && (
+              <div className="mb-6 px-4 py-3 rounded-xl text-sm border" style={{ backgroundColor: "var(--color-red-100)", borderColor: "var(--color-red-200)", color: "var(--color-red-600)" }}>
+                {formError}
+              </div>
+            )}
+
             <div className="space-y-8">
               <fieldset>
                 <legend className="text-base font-bold mb-4 pb-2 border-b w-full" style={{ color: "var(--text-primary)", borderColor: "var(--border-primary)" }}>Identification</legend>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Select label="Marque" val={form.make} onChange={(v) => setForm({ ...form, make: v, model: "" })} options={MAKES} required />
                   <div>
-                    <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Modèle *</label>
+                    <label htmlFor="field-modele" className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>Modèle *</label>
                     {modelsForMake.length > 0 ? (
-                      <select value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })}
+                      <select id="field-modele" name="field-modele" value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })}
                         className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
                         style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }}>
                         <option value="">Sélectionner...</option>
                         {modelsForMake.map((m) => <option key={m} value={m}>{m}</option>)}
                       </select>
                     ) : (
-                      <input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} placeholder="Saisir le modèle"
+                      <input id="field-modele" name="field-modele" value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} placeholder="Saisir le modèle"
                         className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition"
                         style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
                     )}
@@ -341,14 +382,16 @@ export default function InventoryAdmin() {
                 <div className="flex flex-wrap gap-3 mb-3">
                   {form.images.map((img, i) => (
                     <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border group" style={{ borderColor: "var(--border-primary)" }}>
-                      <Image src={img} alt={`${i + 1}`} fill className="object-cover" sizes="96px" unoptimized />
+                      <Image src={img} alt={`${i + 1}`} fill className="object-cover" sizes="96px" />
                       <button onClick={() => removeImage(i)} className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/70 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X className="h-3 w-3 text-white" /></button>
                     </div>
                   ))}
-                  <button onClick={() => fileInputRef.current?.click()} className="w-24 h-24 border-2 border-dashed rounded-lg flex flex-col items-center justify-center transition-colors" style={{ borderColor: "var(--border-primary)", color: "var(--text-muted)" }}>
-                    <Upload className="h-6 w-6 mb-1" /><span className="text-[10px]">Ajouter</span>
+                  <button onClick={() => !uploadingImages && fileInputRef.current?.click()} disabled={uploadingImages}
+                    className="w-24 h-24 border-2 border-dashed rounded-lg flex flex-col items-center justify-center transition-colors disabled:opacity-60"
+                    style={{ borderColor: "var(--border-primary)", color: "var(--text-muted)" }}>
+                    {uploadingImages ? (<><Loader2 className="h-6 w-6 mb-1 animate-spin" /><span className="text-[10px]">Envoi...</span></>) : (<><Upload className="h-6 w-6 mb-1" /><span className="text-[10px]">Ajouter</span></>)}
                   </button>
-                  <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+                  <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} disabled={uploadingImages} />
                 </div>
               </fieldset>
 
@@ -356,7 +399,7 @@ export default function InventoryAdmin() {
                 <legend className="text-base font-bold mb-4 pb-2 border-b w-full" style={{ color: "var(--text-primary)", borderColor: "var(--border-primary)" }}>
                   Équipements <span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>(une par ligne)</span>
                 </legend>
-                <textarea value={form.options} onChange={(e) => setForm({ ...form, options: e.target.value })} rows={5}
+                <textarea id="field-equipements" name="field-equipements" value={form.options} onChange={(e) => setForm({ ...form, options: e.target.value })} rows={5}
                   placeholder="Pack Sport Chrono&#10;Toit ouvrant panoramique&#10;Échappement Sport"
                   className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition resize-none"
                   style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
@@ -366,7 +409,12 @@ export default function InventoryAdmin() {
                 <legend className="text-base font-bold mb-4 pb-2 border-b w-full" style={{ color: "var(--text-primary)", borderColor: "var(--border-primary)" }}>
                   Vidéo <span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>(MP4, WebM — max 50 Mo)</span>
                 </legend>
-                {form.videoUrl ? (
+                {uploadingVideo ? (
+                  <div className="border-2 border-dashed rounded-xl p-6 text-center" style={{ borderColor: "var(--border-primary)" }}>
+                    <Loader2 className="h-8 w-8 mx-auto mb-2 animate-spin" style={{ color: "var(--text-muted)" }} />
+                    <p className="text-sm" style={{ color: "var(--text-muted)" }}>Envoi de la vidéo en cours...</p>
+                  </div>
+                ) : form.videoUrl ? (
                   <div className="relative rounded-xl overflow-hidden border" style={{ borderColor: "var(--border-primary)" }}>
                     <video src={form.videoUrl} controls className="w-full max-h-[200px] object-contain" />
                     <button onClick={removeVideo} className="absolute top-2 right-2 w-8 h-8 bg-black/70 rounded-full flex items-center justify-center transition-colors hover:bg-black/90"><X className="h-4 w-4 text-white" /></button>
@@ -382,9 +430,12 @@ export default function InventoryAdmin() {
             </div>
 
             <div className="flex gap-4 mt-8 pt-6 border-t" style={{ borderColor: "var(--border-primary)" }}>
-              <button onClick={() => setShowModal(false)} className="flex-1 py-3 border rounded-xl font-medium transition-colors" style={{ borderColor: "var(--border-subtle)", color: "var(--text-primary)" }}>Annuler</button>
-              <button onClick={handleSave} className="flex-1 py-3 text-white rounded-xl font-medium transition-colors shadow-lg" style={{ backgroundColor: "var(--color-sg-accent-blue)" }}>
-                {editing ? "Enregistrer" : "Ajouter le véhicule"}
+              <button onClick={() => setShowModal(false)} disabled={saving} className="flex-1 py-3 border rounded-xl font-medium transition-colors disabled:opacity-60" style={{ borderColor: "var(--border-subtle)", color: "var(--text-primary)" }}>Annuler</button>
+              <button onClick={handleSave} disabled={saving || uploadingImages || uploadingVideo}
+                className="flex-1 py-3 text-white rounded-xl font-medium transition-colors shadow-lg disabled:opacity-60 flex items-center justify-center gap-2"
+                style={{ backgroundColor: "var(--color-sg-accent-blue)" }}>
+                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                {saving ? "Enregistrement..." : editing ? "Enregistrer" : "Ajouter le véhicule"}
               </button>
             </div>
           </div>

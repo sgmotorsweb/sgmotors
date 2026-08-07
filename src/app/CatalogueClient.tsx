@@ -164,7 +164,7 @@ export default function CatalogueClient() {
                   className="group flex flex-col rounded-2xl overflow-hidden border transition-all duration-300"
                   style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }}>
                   <div className="relative aspect-[16/10] overflow-hidden">
-                    <Image src={vehicle.images[0]} alt={`${vehicle.make} ${vehicle.model} - ${vehicle.year}`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" unoptimized />
+                    <Image src={vehicle.images[0]} alt={`${vehicle.make} ${vehicle.model} - ${vehicle.year}`} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                     <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
                       <span className="px-2 py-1 backdrop-blur-md text-white text-xs font-bold rounded-full border border-white/30" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>{vehicle.year}</span>
