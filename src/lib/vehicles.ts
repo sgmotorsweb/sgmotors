@@ -48,9 +48,11 @@ export async function fetchVehicles(): Promise<VehicleData[]> {
     if (res.ok) {
       const json = await res.json();
       const data = (json.data || []).map(normalizeVehicle);
-      if (typeof window !== "undefined") {
-        localStorage.setItem("sgmotors_vehicles", JSON.stringify(data));
-      }
+      try {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("sgmotors_vehicles", JSON.stringify(data));
+        }
+      } catch {}
       return data;
     }
   } catch {}
