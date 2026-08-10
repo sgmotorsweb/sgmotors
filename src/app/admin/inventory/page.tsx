@@ -88,12 +88,35 @@ export default function InventoryAdmin() {
     const files = Array.from(e.target.files);
     e.target.value = "";
     setFormError("");
+
+    const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
+    const rejected: string[] = [];
+    const valid = files.filter((f) => {
+      if (f.type === "image/heic" || f.type === "image/heif" || /\.hei[cf]$/i.test(f.name)) {
+        rejected.push(`${f.name} : format HEIC (photos iPhone) non supporté, exportez en JPEG`);
+        return false;
+      }
+      if (!IMAGE_TYPES.includes(f.type)) {
+        rejected.push(`${f.name} : format non supporté (JPEG, PNG, WEBP ou GIF requis)`);
+        return false;
+      }
+      if (f.size > MAX_IMAGE_BYTES) {
+        rejected.push(`${f.name} : ${(f.size / 1024 / 1024).toFixed(1)} Mo, dépasse la limite de 25 Mo`);
+        return false;
+      }
+      return true;
+    });
+
+    if (rejected.length > 0) setFormError(rejected.join(" · "));
+    if (valid.length === 0) return;
+
     setUploadingImages(true);
-    Promise.all(files.map((f) => uploadFile(f, "images")))
+    Promise.all(valid.map((f) => uploadFile(f, "images")))
       .then((urls) => {
         setForm((prev) => ({ ...prev, images: [...prev.images, ...urls] }));
       })
-      .catch(() => setFormError("Échec de l'envoi d'une ou plusieurs images. Réessayez."))
+      .catch(() => setFormError((prev) => (prev ? prev + " · " : "") + "Échec de l'envoi d'une ou plusieurs images. Réessayez."))
       .finally(() => setUploadingImages(false));
   };
 
@@ -106,6 +129,18 @@ export default function InventoryAdmin() {
     const file = e.target.files[0];
     e.target.value = "";
     setFormError("");
+
+    const VIDEO_TYPES = ["video/mp4", "video/webm"];
+    const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+    if (!VIDEO_TYPES.includes(file.type)) {
+      setFormError(`${file.name} : format non supporté (MP4 ou WebM requis)`);
+      return;
+    }
+    if (file.size > MAX_VIDEO_BYTES) {
+      setFormError(`${file.name} : ${(file.size / 1024 / 1024).toFixed(1)} Mo, dépasse la limite de 50 Mo`);
+      return;
+    }
+
     setUploadingVideo(true);
     uploadFile(file, "videos")
       .then((url) => setForm((prev) => ({ ...prev, videoUrl: url })))
@@ -378,7 +413,9 @@ export default function InventoryAdmin() {
               </fieldset>
 
               <fieldset>
-                <legend className="text-base font-bold mb-4 pb-2 border-b w-full" style={{ color: "var(--text-primary)", borderColor: "var(--border-primary)" }}>Images</legend>
+                <legend className="text-base font-bold mb-4 pb-2 border-b w-full" style={{ color: "var(--text-primary)", borderColor: "var(--border-primary)" }}>
+                  Images <span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>(JPEG, PNG, WEBP, GIF — max 25 Mo par photo)</span>
+                </legend>
                 <div className="flex flex-wrap gap-3 mb-3">
                   {form.images.map((img, i) => (
                     <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border group" style={{ borderColor: "var(--border-primary)" }}>
