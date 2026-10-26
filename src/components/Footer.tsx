@@ -93,17 +93,17 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="no-print" style={{ backgroundColor: "var(--bg-dark)" }}>
+    <footer className="no-print border-t" style={{ backgroundColor: "var(--bg-secondary)", borderColor: "var(--border-primary)" }}>
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           <div>
-            <Logo variant="light" className="mb-6" />
-            <p style={{ color: "rgba(255,255,255,0.62)" }} className="text-sm mb-6">
+            <Logo className="mb-6" />
+            <p style={{ color: "var(--text-muted)" }} className="text-sm mb-6">
               Achat, vente et recherche personnalisée de véhicules d&apos;occasion sélectionnés avec soin.
             </p>
             <div className="flex gap-4">
               {socialLinks.filter((l) => l.url).map((l) => (
-                <a key={l.label} href={l.url} target="_blank" rel="noopener noreferrer" aria-label={l.label} className="w-10 h-10 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.62)" }}>
+                <a key={l.label} href={l.url} target="_blank" rel="noopener noreferrer" aria-label={l.label} className="w-10 h-10 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: "var(--bg-tertiary)", color: "var(--text-muted)" }}>
                   <l.icon />
                 </a>
               ))}
@@ -111,55 +111,55 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-bold text-lg mb-6" style={{ color: "#fff" }}>Liens Rapides</h4>
+            <h4 className="font-bold text-lg mb-6" style={{ color: "var(--text-primary)" }}>Liens Rapides</h4>
             <ul className="space-y-3">
-              <li><Link href="/acheter" className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.62)" }}>Acheter un véhicule</Link></li>
-              <li><Link href="/vendre" className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.62)" }}>Vendre mon véhicule</Link></li>
-              <li><Link href="/recherche-personnalisee" className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.62)" }}>Recherche personnalisée</Link></li>
-              <li><Link href="/contact" className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.62)" }}>Nous contacter</Link></li>
+              <li><Link href="/acheter" className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>Acheter un véhicule</Link></li>
+              <li><Link href="/vendre" className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>Vendre mon véhicule</Link></li>
+              <li><Link href="/recherche-personnalisee" className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>Recherche personnalisée</Link></li>
+              <li><Link href="/contact" className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>Nous contacter</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-bold text-lg mb-6" style={{ color: "#fff" }}>Informations Légales</h4>
+            <h4 className="font-bold text-lg mb-6" style={{ color: "var(--text-primary)" }}>Informations Légales</h4>
             <ul className="space-y-3">
-              <li><Link href="/mentions-legales" className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.62)" }}>Mentions Légales</Link></li>
-              <li><Link href="/cgu" className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.62)" }}>CGU</Link></li>
-              <li><Link href="/cgv" className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.62)" }}>CGV</Link></li>
-              <li><Link href="/rgpd" className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.62)" }}>Politique de Confidentialité</Link></li>
+              <li><Link href="/mentions-legales" className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>Mentions Légales</Link></li>
+              <li><Link href="/cgu" className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>CGU</Link></li>
+              <li><Link href="/cgv" className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>CGV</Link></li>
+              <li><Link href="/rgpd" className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>Politique de Confidentialité</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-bold text-lg mb-6" style={{ color: "#fff" }}>Contactez-nous</h4>
+            <h4 className="font-bold text-lg mb-6" style={{ color: "var(--text-primary)" }}>Contactez-nous</h4>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--color-sg-accent-blue)" }} />
-                <span className="text-sm" style={{ color: "rgba(255,255,255,0.62)" }}>{address}</span>
+                <span className="text-sm" style={{ color: "var(--text-muted)" }}>{address}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="h-5 w-5 shrink-0" style={{ color: "var(--color-sg-accent-blue)" }} />
-                <a href={`tel:${s.phone.replace(/\s/g, "")}`} className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.62)" }}>{s.phone || "—"}</a>
+                <a href={`tel:${s.phone.replace(/\s/g, "")}`} className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>{s.phone || "—"}</a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="h-5 w-5 shrink-0" style={{ color: "var(--color-sg-accent-blue)" }} />
-                <a href={`mailto:${email}`} className="text-sm transition-colors" style={{ color: "rgba(255,255,255,0.62)" }}>{email}</a>
+                <a href={`mailto:${email}`} className="text-sm transition-colors" style={{ color: "var(--text-muted)" }}>{email}</a>
               </li>
               <li className="flex items-start gap-3">
                 <Clock className="h-5 w-5 shrink-0 mt-0.5" style={{ color: "var(--color-sg-accent-blue)" }} />
-                <span className="text-sm whitespace-pre-line" style={{ color: "rgba(255,255,255,0.62)" }}>{s.hours || "—"}</span>
+                <span className="text-sm whitespace-pre-line" style={{ color: "var(--text-muted)" }}>{s.hours || "—"}</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8" style={{ borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-          <p className="text-sm text-center md:text-left" style={{ color: "rgba(255,255,255,0.62)" }}>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8" style={{ borderTop: "1px solid var(--border-primary)" }}>
+          <p className="text-sm text-center md:text-left" style={{ color: "var(--text-muted)" }}>
             &copy; {new Date().getFullYear()} SG MOTORS. Tous droits réservés.
           </p>
-          <div className="flex gap-4 text-xs" style={{ color: "rgba(255,255,255,0.62)" }}>
-            <Link href="/mentions-legales" className="transition-colors" style={{ color: "rgba(255,255,255,0.62)" }}>Mentions légales</Link>
-            <Link href="/rgpd" className="transition-colors" style={{ color: "rgba(255,255,255,0.62)" }}>RGPD</Link>
+          <div className="flex gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
+            <Link href="/mentions-legales" className="transition-colors" style={{ color: "var(--text-muted)" }}>Mentions légales</Link>
+            <Link href="/rgpd" className="transition-colors" style={{ color: "var(--text-muted)" }}>RGPD</Link>
           </div>
         </div>
       </div>
