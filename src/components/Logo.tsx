@@ -1,17 +1,24 @@
+import Image from "next/image";
 import Link from "next/link";
 
-export default function Logo({ variant = "dark", className = "" }: { variant?: "dark" | "light"; className?: string }) {
-  const motorsColor = variant === "dark" ? "var(--text-primary)" : "#ffffff";
-  const taglineColor = variant === "dark" ? "var(--text-muted)" : "rgba(255,255,255,0.6)";
+// Logo officiel : version sombre (fond clair) ou claire (fond sombre).
+export function LogoImage({ variant = "dark", className = "h-14 w-auto" }: { variant?: "dark" | "light"; className?: string }) {
   return (
-    <Link href="/" aria-label="SG MOTORS — Accueil" className={`inline-flex flex-col items-end leading-none select-none ${className}`}>
-      <span className="font-logo font-extrabold italic tracking-tight text-[1.65rem] md:text-[1.9rem]">
-        <span style={{ color: "var(--color-sg-accent-blue)" }}>SG</span>
-        <span className="ml-2" style={{ color: motorsColor }}>MOTORS</span>
-      </span>
-      <span className="mt-1 text-[0.55rem] md:text-[0.6rem] font-semibold uppercase tracking-[0.28em]" style={{ color: taglineColor }}>
-        Automobiles d&apos;occasion
-      </span>
+    <Image
+      src={variant === "dark" ? "/logo-sgmotors.png" : "/logo-sgmotors-light.png"}
+      alt="SG MOTORS — Conseil, achat, vente"
+      width={1130}
+      height={405}
+      priority
+      className={className}
+    />
+  );
+}
+
+export default function Logo({ variant = "dark", className = "" }: { variant?: "dark" | "light"; className?: string }) {
+  return (
+    <Link href="/" aria-label="SG MOTORS — Accueil" className={`inline-flex items-center ${className}`}>
+      <LogoImage variant={variant} className="h-14 md:h-16 w-auto" />
     </Link>
   );
 }

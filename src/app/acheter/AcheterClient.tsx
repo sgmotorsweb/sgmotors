@@ -82,11 +82,11 @@ export default function AcheterClient() {
 
   return (
     <div className="flex flex-col flex-1 bg-primary">
-      <section className="px-4 pt-12 pb-24 md:pb-28" style={{ backgroundColor: "var(--bg-dark)" }}>
+      <section className="px-4 pt-12 pb-24 md:pb-28 border-b" style={{ backgroundColor: "var(--bg-secondary)", borderColor: "var(--border-primary)" }}>
         <div className="container mx-auto">
-          <p className="eyebrow mb-4" style={{ color: "rgba(255,255,255,0.6)" }}>Acheter</p>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white">Nos véhicules disponibles</h1>
-          <p className="mt-3 text-base max-w-xl" style={{ color: "rgba(255,255,255,0.7)" }}>Des véhicules d&apos;occasion sélectionnés avec soin, contrôlés et prêts à prendre la route.</p>
+          <p className="eyebrow mb-4">Acheter</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight" style={{ color: "var(--text-primary)" }}>Nos véhicules <span style={{ color: "var(--color-sg-accent-blue)" }}>disponibles</span></h1>
+          <p className="mt-3 text-base max-w-xl" style={{ color: "var(--text-secondary)" }}>Des véhicules d&apos;occasion sélectionnés avec soin, contrôlés et prêts à prendre la route.</p>
         </div>
       </section>
 
@@ -162,16 +162,16 @@ export default function AcheterClient() {
 
       <section className="px-4 pb-16">
         <div className="container mx-auto">
-          <div className="rounded-3xl px-6 py-12 md:px-14 md:py-14 flex flex-col lg:flex-row items-center justify-between gap-8 text-center lg:text-left" style={{ backgroundColor: "var(--bg-dark)" }}>
+          <div className="rounded-3xl border px-6 py-12 md:px-14 md:py-14 flex flex-col lg:flex-row items-center justify-between gap-8 text-center lg:text-left" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)", boxShadow: "var(--shadow-md)" }}>
             <div>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-white">Vous ne trouvez pas votre bonheur ?</h2>
-              <p className="mt-2 text-base" style={{ color: "rgba(255,255,255,0.7)" }}>Faites-nous part de votre souhait : nous trouvons le véhicule qui vous correspond.</p>
+              <h2 className="text-2xl md:text-3xl font-extrabold" style={{ color: "var(--text-primary)" }}>Vous ne trouvez pas votre <span style={{ color: "var(--color-sg-accent-blue)" }}>bonheur</span> ?</h2>
+              <p className="mt-2 text-base" style={{ color: "var(--text-secondary)" }}>Faites-nous part de votre souhait : nous trouvons le véhicule qui vous correspond.</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 shrink-0">
               <Link href="/recherche-personnalisee" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 text-white rounded-full font-semibold transition-opacity hover:opacity-90" style={{ backgroundColor: "var(--color-sg-accent-blue)" }}>
                 Recherche personnalisée <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/contact" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full font-semibold border transition-colors hover:bg-white/10 text-white" style={{ borderColor: "rgba(255,255,255,0.3)" }}>
+              <Link href="/contact" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full font-semibold border transition-colors hover:bg-[var(--hover-bg)]" style={{ borderColor: "var(--text-primary)", color: "var(--text-primary)" }}>
                 <Mail className="h-4 w-4" /> Nous contacter
               </Link>
             </div>

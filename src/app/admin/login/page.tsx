@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Loader2 } from "lucide-react";
+import { LogoImage } from "@/components/Logo";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");
@@ -36,9 +37,7 @@ export default function AdminLogin() {
     <div className="flex flex-col min-h-screen items-center justify-center bg-primary px-4 py-20">
       <div className="border rounded-2xl p-10 max-w-md w-full shadow-lg" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }}>
         <div className="text-center mb-8">
-          <p className="font-logo font-extrabold italic text-2xl mb-4">
-            <span style={{ color: "var(--color-sg-accent-blue)" }}>SG</span> <span style={{ color: "var(--text-primary)" }}>MOTORS</span>
-          </p>
+          <LogoImage className="h-20 w-auto mx-auto mb-4" />
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Espace Pro</h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>Connectez-vous pour accéder à l&apos;administration</p>
         </div>

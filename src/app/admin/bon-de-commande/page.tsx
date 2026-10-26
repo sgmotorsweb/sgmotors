@@ -4,8 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FileSignature, ImagePlus, Plus, Printer, RotateCcw, Trash2, X } from "lucide-react";
 import { fetchVehicles, type VehicleData } from "@/lib/vehicles";
 import { fetchServerSettings, type AppSettings } from "@/lib/settings";
+import { LogoImage } from "@/components/Logo";
 
 const DRAFT_KEY = "sgmotors_bon_commande_draft";
+const SIRET = "10651963000011";
 
 type Fields = Record<string, string>;
 interface PriceLine { id: string; label: string; amount: string; }
@@ -36,7 +38,7 @@ const newOrderNumber = () => {
 };
 
 const emptyOrder = (): OrderState => ({
-  fields: { numero: newOrderNumber(), date: today(), conditions: DEFAULT_CONDITIONS, garantie: "12 mois", paiement: "Virement bancaire", lieuLivraison: "SG MOTORS — Aubagne" },
+  fields: { numero: newOrderNumber(), date: today(), siret: SIRET, conditions: DEFAULT_CONDITIONS, garantie: "12 mois", paiement: "Virement bancaire", lieuLivraison: "SG MOTORS — Aubagne" },
   lines: [
     { id: uid(), label: "Prix du véhicule TTC", amount: "" },
     { id: uid(), label: "Frais de mise à la route", amount: "" },
@@ -67,7 +69,10 @@ export default function BonDeCommandePage() {
     /* eslint-disable react-hooks/set-state-in-effect */
     try {
       const draft = localStorage.getItem(DRAFT_KEY);
-      if (draft) setOrder({ ...emptyOrder(), ...JSON.parse(draft) });
+      if (draft) {
+        const parsed = JSON.parse(draft);
+        setOrder({ ...emptyOrder(), ...parsed, fields: { ...parsed.fields, siret: parsed.fields?.siret || SIRET } });
+      }
     } catch {}
     setLoaded(true);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -162,10 +167,7 @@ export default function BonDeCommandePage() {
         {/* En-tête */}
         <header className="flex justify-between items-start gap-6 pb-5 border-b-2" style={{ borderColor: "var(--color-sg-accent-blue)" }}>
           <div>
-            <p className="font-logo font-extrabold italic text-3xl leading-none">
-              <span style={{ color: "var(--color-sg-accent-blue)" }}>SG</span> <span>MOTORS</span>
-            </p>
-            <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-slate-500 mt-1">Automobiles d&apos;occasion</p>
+            <LogoImage className="h-20 w-auto -ml-1" />
             <div className="mt-3 text-[11px] text-slate-600 space-y-0.5">
               <p>{settings?.address || "Actiburo 3 Bâtiment A, 100 Chemin de l'Aumone-Vieille, 13400 Aubagne"}</p>
               <p>{[settings?.phone, settings?.email || "sgmotorsweb@gmail.com"].filter(Boolean).join(" · ")}</p>

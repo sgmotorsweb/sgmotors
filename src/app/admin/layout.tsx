@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import { LogoImage } from "@/components/Logo";
 import { LayoutDashboard, Car, Inbox, Settings, LogOut, ChevronRight, Trash2, Key, Menu, X, FileSignature, StickyNote, ExternalLink } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -101,7 +102,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex flex-col md:flex-row min-h-screen w-full print:block" style={{ backgroundColor: "var(--bg-primary)" }}>
       <aside className="no-print w-full md:w-64 flex-shrink-0 flex-col hidden md:flex border-r" style={{ backgroundColor: "var(--bg-secondary)", borderColor: "var(--border-primary)" }}>
         <div className="p-6 border-b" style={{ borderColor: "var(--border-primary)" }}>
-          <p className="font-logo font-extrabold italic text-xl"><span style={{ color: "var(--color-sg-accent-blue)" }}>SG</span> <span style={{ color: "var(--text-primary)" }}>MOTORS</span></p>
+          <LogoImage className="h-14 w-auto" />
           <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Espace Pro</p>
         </div>
         {navContent}
@@ -113,10 +114,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="absolute inset-y-0 left-0 w-72 max-w-[80vw] flex flex-col shadow-2xl" onClick={(e) => e.stopPropagation()} style={{ backgroundColor: "var(--bg-secondary)" }}>
             <div className="p-6 border-b flex items-center justify-between" style={{ borderColor: "var(--border-primary)" }}>
               <div>
-                <h2 className="text-xl font-bold flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
-                  <Settings style={{ color: "var(--color-sg-accent-blue)" }} className="h-5 w-5" /> Back-Office
-                </h2>
-                <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>SG MOTORS Admin</p>
+                <LogoImage className="h-12 w-auto" />
+                <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Espace Pro</p>
               </div>
               <button onClick={() => setMobileMenuOpen(false)} className="p-1 rounded-lg" style={{ color: "var(--text-muted)" }}><X className="h-5 w-5" /></button>
             </div>
@@ -131,7 +130,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <button onClick={() => setMobileMenuOpen(true)} className="p-2 -ml-2 rounded-lg" style={{ color: "var(--text-muted)" }} aria-label="Ouvrir le menu">
               <Menu className="h-5 w-5" />
             </button>
-            <h2 className="font-bold" style={{ color: "var(--text-primary)" }}>Admin SG MOTORS</h2>
+            <LogoImage className="h-9 w-auto" />
           </div>
           <div className="flex gap-2">
             <button onClick={handleLogout} className="p-2 rounded-lg" style={{ color: "var(--text-muted)" }}>
