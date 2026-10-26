@@ -107,7 +107,7 @@ export default function CGV() {
             <li><strong>Virement bancaire :</strong> Mode de paiement à privilégier. Le virement doit provenir d&apos;un établissement bancaire agréé et le montant doit être crédité sur le compte de SG MOTORS au moins 24 heures avant l&apos;enlèvement.</li>
             <li><strong>Chèque de banque :</strong> Uniquement les chèques émis par une banque française. Une copie du chèque doit être transmise à SG MOTORS au moins 48 heures ouvrées avant la livraison afin de permettre la vérification de son authenticité auprès de la banque émettrice.</li>
           </ul>
-          <p className="mt-2 text-red-500/90 dark:text-red-400 font-semibold">
+          <p className="mt-2 text-red-500/90 font-semibold">
             Aucun véhicule ne sera remis au Client sans la confirmation définitive du paiement intégral.
           </p>
         </div>

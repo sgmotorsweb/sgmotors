@@ -1,5 +1,4 @@
 export interface AppSettings {
-  password: string;
   facebook: string;
   instagram: string;
   youtube: string;
@@ -13,10 +12,11 @@ export interface AppSettings {
   email: string;
   address: string;
   hours: string;
+  companyName?: string;
+  siret?: string;
 }
 
 const STATIC_DEFAULTS: AppSettings = {
-  password: "sgmotors2024",
   facebook: "",
   instagram: "",
   youtube: "",
@@ -63,9 +63,4 @@ export function saveSettings(s: AppSettings): void {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(s),
   }).catch(() => {});
-}
-
-export function verifyPassword(password: string): boolean {
-  const settings = getSettings();
-  return password === settings.password;
 }

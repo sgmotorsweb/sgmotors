@@ -73,7 +73,7 @@ export function getModelsForMake(make: string): string[] {
 export const ENERGY_TYPES = ["Essence", "Diesel", "Électrique", "Hybride", "Hybride Rechargeable", "GPL", "E85", "Hydrogène"];
 export const TRANSMISSION_TYPES = ["Manuelle", "Automatique", "Automatique (PDK)", "Automatique (DSG)", "Automatique (EDC)", "Automatique (ECT)", "Automatique (Tiptronic)", "Robotisée", "CVT", "Direct Drive"];
 export const VEHICLE_TYPES = ["Berline", "Coupé", "Cabriolet", "SUV", "4x4", "Break", "Monospace", "Citadine", "Sportive", "Supercar", "Pick-up", "Van", "Utilitaire"];
-export const DOOR_COUNTS = ["2", "3", "4", "5"];
+export const DOOR_COUNTS = ["3", "5"];
 export const SEAT_COUNTS = ["2", "4", "5", "7"];
 export const CONDITION_TYPES = ["Excellent", "Très bon état", "Bon état", "Usure normale", "À restaurer"];
-export const CRIT_AIR_STICKERS = ["0 (Vert)", "1 (Violet)", "2 (Jaune)", "3 (Orange)", "4 (Rouge)", "5 (Gris)", "Non classé"];
+export const VISIBILITY_OPTIONS = ["Sur parc", "Sur RDV", "Chez fournisseur"];

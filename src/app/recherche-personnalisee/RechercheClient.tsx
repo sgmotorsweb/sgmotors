@@ -5,7 +5,7 @@ import { Search, CheckCircle, Send } from "lucide-react";
 
 const MARQUES = ["Alfa Romeo", "Audi", "BMW", "Citroën", "Ferrari", "Fiat", "Ford", "Honda", "Hyundai", "Kia", "Lamborghini", "Land Rover", "Lexus", "Maserati", "Mazda", "Mercedes-Benz", "Mitsubishi", "Nissan", "Peugeot", "Porsche", "Renault", "Seat", "Skoda", "Subaru", "Tesla", "Toyota", "Volkswagen", "Volvo", "Autre"];
 
-export default function RequeteRechercheClient() {
+export default function RechercheClient() {
   const [form, setForm] = useState({ marque: "", modele: "", km: "", description: "", nom: "", prenom: "", email: "", telephone: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -78,7 +78,7 @@ export default function RequeteRechercheClient() {
           <div className="flex items-start gap-4">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 mt-1" style={{ backgroundColor: "var(--badge-bg)" }}><Search className="h-7 w-7" style={{ color: "var(--color-sg-accent-blue)" }} /></div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold mb-2" style={{ color: "var(--text-primary)" }}>Requête de recherche</h1>
+              <h1 className="text-3xl md:text-4xl font-extrabold mb-2" style={{ color: "var(--text-primary)" }}>Recherche personnalisée</h1>
               <p className="max-w-xl" style={{ color: "var(--text-muted)" }}>Vous recherchez un modèle spécifique introuvable dans notre stock ? Confiez-nous votre recherche : nous mobilisons notre réseau professionnel pour vous trouver LA bonne affaire, avec un accompagnement complet de A à Z.</p>
             </div>
           </div>

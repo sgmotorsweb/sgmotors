@@ -25,24 +25,26 @@ export default function SettingsPage() {
     setTimeout(() => setSaved(false), 3000);
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     setPasswordError("");
-    if (!settings) return;
-    if (currentPassword !== settings.password) {
-      setPasswordError("Mot de passe actuel incorrect");
-      return;
-    }
-    if (!newPassword || newPassword.length < 4) {
-      setPasswordError("Le nouveau mot de passe doit contenir au moins 4 caractères");
+    if (!newPassword || newPassword.length < 8) {
+      setPasswordError("Le nouveau mot de passe doit contenir au moins 8 caractères");
       return;
     }
     if (newPassword !== confirmNewPassword) {
       setPasswordError("Les mots de passe ne correspondent pas");
       return;
     }
-    const updated = { ...settings, password: newPassword };
-    setSettings(updated);
-    saveSettings(updated);
+    const res = await fetch("/api/admin/password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    }).catch(() => null);
+    if (!res || !res.ok) {
+      const json = await res?.json().catch(() => ({}));
+      setPasswordError(json?.error || "Erreur lors de la modification");
+      return;
+    }
     setCurrentPassword("");
     setNewPassword("");
     setConfirmNewPassword("");

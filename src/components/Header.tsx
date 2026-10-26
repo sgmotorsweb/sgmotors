@@ -2,25 +2,22 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { Menu, X, Phone, Sun, Moon } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useTheme } from "@/context/ThemeContext";
 import { fetchServerSettings } from "@/lib/settings";
+import Logo from "@/components/Logo";
 
 const navLinks = [
-  { href: "/", label: "Catalogue" },
-  { href: "/reprise", label: "Reprise" },
-  { href: "/requete-recherche", label: "Requête de recherche" },
+  { href: "/acheter", label: "Acheter" },
+  { href: "/vendre", label: "Vendre" },
+  { href: "/recherche-personnalisee", label: "Recherche personnalisée" },
   { href: "/contact", label: "Contact" },
-  { href: "/admin", label: "Espace Pro" },
 ];
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [phone, setPhone] = useState("");
   const pathname = usePathname();
-  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     fetchServerSettings().then((s) => {
@@ -28,47 +25,34 @@ export default function Header() {
     });
   }, [pathname]);
 
-  return (
-    <header className="sticky top-0 z-50 w-full" style={{ backgroundColor: "var(--bg-secondary)", boxShadow: "var(--shadow-sm)" }}>
-      <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center shrink-0">
-          <Image
-            src="/logo.png"
-            alt="SG MOTORS"
-            width={200}
-            height={75}
-            className="h-18 md:h-20 w-auto object-contain"
-            priority
-          />
-        </Link>
+  // Le back-office a sa propre navigation.
+  if (pathname.startsWith("/admin")) return null;
 
-        <nav className="hidden md:flex items-center gap-6">
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
+  return (
+    <header className="no-print sticky top-0 z-50 w-full border-b" style={{ backgroundColor: "rgba(255,255,255,0.96)", borderColor: "var(--border-primary)", backdropFilter: "blur(8px)" }}>
+      <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-6">
+        <Logo className="shrink-0" />
+
+        <nav className="hidden lg:flex items-center gap-9">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              style={{
-                color: pathname === link.href ? "var(--color-sg-accent-blue)" : "var(--text-primary)",
-              }}
-              className="text-sm font-semibold transition-colors hover:text-[var(--color-sg-accent-blue)]"
+              className="relative text-[0.95rem] font-medium transition-colors hover:text-[var(--color-sg-accent-blue)] py-2"
+              style={{ color: isActive(link.href) ? "var(--color-sg-accent-blue)" : "var(--text-primary)" }}
             >
               {link.label}
+              {isActive(link.href) && <span className="absolute left-0 right-0 -bottom-0.5 h-0.5 rounded-full" style={{ backgroundColor: "var(--color-sg-accent-blue)" }} />}
             </Link>
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center gap-3">
-          <button
-            onClick={toggleTheme}
-            className="p-2.5 rounded-lg transition-colors"
-            style={{ color: "var(--text-secondary)", backgroundColor: "var(--bg-tertiary)" }}
-            aria-label="Changer le thème"
-          >
-            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </button>
+        <div className="hidden lg:flex items-center">
           {phone && <a
             href={`tel:${phone}`}
-            className="flex items-center gap-2 px-5 py-2.5 text-white rounded-lg text-sm font-semibold transition-colors shadow"
+            className="flex items-center gap-2 px-6 py-3 text-white rounded-full text-sm font-semibold transition-opacity hover:opacity-90 shadow-md"
             style={{ backgroundColor: "var(--color-sg-accent-blue)" }}
           >
             <Phone className="h-4 w-4" />
@@ -78,7 +62,7 @@ export default function Header() {
 
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden p-2 transition-colors"
+          className="lg:hidden p-2 transition-colors"
           style={{ color: "var(--text-primary)" }}
           aria-label="Menu"
         >
@@ -87,38 +71,30 @@ export default function Header() {
       </div>
 
       {menuOpen && (
-        <div className="md:hidden" style={{ backgroundColor: "var(--bg-secondary)", borderTop: "1px solid var(--border-primary)" }}>
-          <nav className="flex flex-col gap-4 pt-4 pb-6 px-4">
+        <div className="lg:hidden" style={{ backgroundColor: "var(--bg-secondary)", borderTop: "1px solid var(--border-primary)" }}>
+          <nav className="flex flex-col gap-2 pt-2 pb-6 px-4">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
                 style={{
-                  color: pathname === link.href ? "var(--color-sg-accent-blue)" : "var(--text-primary)",
+                  color: isActive(link.href) ? "var(--color-sg-accent-blue)" : "var(--text-primary)",
                   borderBottom: "1px solid var(--border-primary)",
                 }}
-                className="text-sm font-semibold py-2 transition-colors"
+                className="text-base font-medium py-3 transition-colors"
               >
                 {link.label}
               </Link>
             ))}
-            <div className="flex gap-3 mt-2">
-              <button
-                onClick={toggleTheme}
-                className="flex-1 py-3 rounded-lg text-sm font-semibold transition-colors"
-                style={{ color: "var(--text-secondary)", backgroundColor: "var(--bg-tertiary)" }}
-              >
-                {theme === "dark" ? "Mode clair" : "Mode sombre"}
-              </button>
-              {phone && <a
-                href={`tel:${phone}`}
-                className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-[var(--color-sg-accent-blue)] text-white rounded-lg text-sm font-semibold"
-              >
-                <Phone className="h-4 w-4" />
-                Appel direct
-              </a>}
-            </div>
+            {phone && <a
+              href={`tel:${phone}`}
+              className="mt-3 flex items-center justify-center gap-2 px-5 py-3 text-white rounded-full text-sm font-semibold"
+              style={{ backgroundColor: "var(--color-sg-accent-blue)" }}
+            >
+              <Phone className="h-4 w-4" />
+              Appel direct
+            </a>}
           </nav>
         </div>
       )}

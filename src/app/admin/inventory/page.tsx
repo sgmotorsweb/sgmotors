@@ -6,10 +6,10 @@ import Image from "next/image";
 import type { VehicleData } from "@/lib/vehicles";
 import { fetchVehicles, saveVehicle, deleteVehicle, updateVehicleStatus } from "@/lib/vehicles";
 import { uploadFile } from "@/lib/upload";
-import { MAKES, getModelsForMake, ENERGY_TYPES, TRANSMISSION_TYPES, VEHICLE_TYPES, DOOR_COUNTS, SEAT_COUNTS, CONDITION_TYPES, CRIT_AIR_STICKERS } from "@/lib/cars-data";
+import { MAKES, getModelsForMake, ENERGY_TYPES, TRANSMISSION_TYPES, VEHICLE_TYPES, DOOR_COUNTS, SEAT_COUNTS, CONDITION_TYPES, VISIBILITY_OPTIONS } from "@/lib/cars-data";
 
 const STATUSES = ["En ligne", "Brouillon", "En préparation", "Réservé", "Vendu"];
-const BADGES = ["", "Coup de cœur", "Nouveau", "Exclusif"];
+const BADGES = ["", "Coup de cœur", "Nouveau", "Exclusif", "Faible kilométrage", "Garantie 12 mois"];
 
 const StatutBadge = ({ status }: { status: string }) => {
   const c = ({ "En ligne": "green", "Réservé": "orange", "En préparation": "gray", "Vendu": "red" })[status] || "gray";
@@ -46,18 +46,28 @@ const Select = ({ label, val, onChange, options, required }: { label: string; va
 };
 
 interface FormState {
-  make: string; model: string; finition: string; year: string; firstRegDate: string; price: string; mileage: string;
-  fuel: string; transmission: string; vehicleType: string; critAir: string; color: string; doors: string; seats: string;
+  make: string; model: string; finition: string; year: string; price: string; mileage: string;
+  fuel: string; transmission: string; vehicleType: string; color: string; doors: string; seats: string;
   power: string; powerFiscal: string; consumption: string; co2: string; condition: string; badge: string; status: string;
-  options: string; videoUrl: string;
+  visibility: string; options: string; extraInfo: string; videoUrl: string;
   images: string[];
 }
 
 const emptyForm = (): FormState => ({
-  make: "", model: "", finition: "", year: "", firstRegDate: "", price: "", mileage: "",
-  fuel: "Essence", transmission: "Automatique", vehicleType: "Berline", critAir: "1", color: "", doors: "4", seats: "5",
+  make: "", model: "", finition: "", year: "", price: "", mileage: "",
+  fuel: "Essence", transmission: "Automatique", vehicleType: "Berline", color: "", doors: "5", seats: "5",
   power: "", powerFiscal: "", consumption: "", co2: "", condition: "Bon état", badge: "", status: "En ligne",
-  options: "", videoUrl: "", images: [],
+  visibility: "Sur parc", options: "", extraInfo: "", videoUrl: "", images: [],
+});
+
+const vehicleToForm = (v: VehicleData): FormState => ({
+  make: v.make, model: v.model, finition: v.finition || "", year: String(v.year),
+  price: String(v.price), mileage: String(v.mileage), fuel: v.fuel, transmission: v.transmission,
+  vehicleType: v.vehicleType || "", color: v.color || "", doors: String(v.doors), seats: String(v.seats),
+  power: v.power || "", powerFiscal: v.powerFiscal || "", consumption: v.consumption || "", co2: v.co2 || "", condition: v.condition || "",
+  badge: v.badge || "", status: v.status || "En ligne", visibility: v.visibility || "",
+  options: (v.options || []).join("\n"), extraInfo: v.extraInfo || "", videoUrl: v.videoUrl || "",
+  images: v.images,
 });
 
 export default function InventoryAdmin() {
@@ -166,15 +176,7 @@ export default function InventoryAdmin() {
 
   const openEdit = (v: VehicleData) => {
     setEditing(v);
-    setForm({
-      make: v.make, model: v.model, finition: v.finition || "", year: String(v.year), firstRegDate: v.firstRegDate || "",
-      price: String(v.price), mileage: String(v.mileage), fuel: v.fuel, transmission: v.transmission,
-      vehicleType: v.vehicleType || "", critAir: String(v.critAir), color: v.color, doors: String(v.doors), seats: String(v.seats),
-      power: v.power, powerFiscal: v.powerFiscal || "", consumption: v.consumption, co2: v.co2, condition: v.condition || "",
-      badge: v.badge || "", status: v.status || "En ligne",
-      options: (v.options || []).join("\n"), videoUrl: v.videoUrl || "",
-      images: v.images,
-    });
+    setForm(vehicleToForm(v));
     setFormError("");
     setShowModal(true);
     fileInputRef.current && (fileInputRef.current.value = "");
@@ -196,14 +198,16 @@ export default function InventoryAdmin() {
     const vehicle: VehicleData = {
       id: editing ? editing.id : String(Date.now()),
       make: form.make, model: form.model, finition: form.finition || undefined,
-      year: Number(form.year), firstRegDate: form.firstRegDate || undefined,
+      year: Number(form.year),
       price: Number(form.price), mileage: Number(form.mileage) || 0,
       fuel: form.fuel, transmission: form.transmission, vehicleType: form.vehicleType || undefined,
-      critAir: Number(form.critAir) || 1, color: form.color,
-      doors: Number(form.doors) || 4, seats: Number(form.seats) || 5,
+      color: form.color,
+      doors: Number(form.doors) || 5, seats: Number(form.seats) || 5,
       power: form.power, powerFiscal: form.powerFiscal || undefined,
       consumption: form.consumption, co2: form.co2, condition: form.condition || undefined,
       options: form.options.split("\n").filter(Boolean),
+      visibility: form.visibility || undefined,
+      extraInfo: form.extraInfo.trim() || undefined,
       videoUrl: form.videoUrl || undefined,
       images, badge: form.badge || undefined, status: form.status, views: editing ? editing.views || 0 : 0,
     };
@@ -222,15 +226,7 @@ export default function InventoryAdmin() {
 
   const handleDuplicate = (v: VehicleData) => {
     setEditing(null);
-    setForm({
-      make: v.make, model: v.model, finition: v.finition || "", year: String(v.year), firstRegDate: v.firstRegDate || "",
-      price: String(v.price), mileage: String(v.mileage), fuel: v.fuel, transmission: v.transmission,
-      vehicleType: v.vehicleType || "", critAir: String(v.critAir), color: v.color, doors: String(v.doors), seats: String(v.seats),
-      power: v.power, powerFiscal: v.powerFiscal || "", consumption: v.consumption, co2: v.co2, condition: v.condition || "",
-      badge: v.badge || "", status: v.status || "En ligne",
-      options: (v.options || []).join("\n"), videoUrl: v.videoUrl || "",
-      images: v.images,
-    });
+    setForm(vehicleToForm(v));
     setFormError("");
     setShowModal(true);
     fileInputRef.current && (fileInputRef.current.value = "");
@@ -370,10 +366,9 @@ export default function InventoryAdmin() {
 
               <fieldset>
                 <legend className="text-base font-bold mb-4 pb-2 border-b w-full" style={{ color: "var(--text-primary)", borderColor: "var(--border-primary)" }}>Circulation & Prix</legend>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Input label="Année *" val={form.year} onChange={(v) => setForm({ ...form, year: v })} type="number" placeholder="2024" required />
-                  <Input label="Date 1ère mise en circulation" val={form.firstRegDate} onChange={(v) => setForm({ ...form, firstRegDate: v })} type="month" />
-                  <Input label="Prix (€) *" val={form.price} onChange={(v) => setForm({ ...form, price: v })} type="number" placeholder="115000" required />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input label="Année" val={form.year} onChange={(v) => setForm({ ...form, year: v })} type="number" placeholder="2024" required />
+                  <Input label="Prix (€)" val={form.price} onChange={(v) => setForm({ ...form, price: v })} type="number" placeholder="115000" required />
                   <Input label="Kilométrage" val={form.mileage} onChange={(v) => setForm({ ...form, mileage: v })} type="number" placeholder="24000" />
                 </div>
               </fieldset>
@@ -384,7 +379,7 @@ export default function InventoryAdmin() {
                   <Select label="Énergie" val={form.fuel} onChange={(v) => setForm({ ...form, fuel: v })} options={ENERGY_TYPES} />
                   <Select label="Boîte de vitesse" val={form.transmission} onChange={(v) => setForm({ ...form, transmission: v })} options={TRANSMISSION_TYPES} />
                   <Select label="Type de véhicule" val={form.vehicleType} onChange={(v) => setForm({ ...form, vehicleType: v })} options={VEHICLE_TYPES} />
-                  <Select label="Crit'Air" val={form.critAir} onChange={(v) => setForm({ ...form, critAir: v })} options={CRIT_AIR_STICKERS.map((s) => s.split(" ")[0])} />
+                  <Select label="Visibilité" val={form.visibility} onChange={(v) => setForm({ ...form, visibility: v })} options={VISIBILITY_OPTIONS} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
                   <Select label="Portes" val={form.doors} onChange={(v) => setForm({ ...form, doors: v })} options={DOOR_COUNTS} />
@@ -407,7 +402,7 @@ export default function InventoryAdmin() {
               <fieldset>
                 <legend className="text-base font-bold mb-4 pb-2 border-b w-full" style={{ color: "var(--text-primary)", borderColor: "var(--border-primary)" }}>Classification</legend>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Select label="Badge" val={form.badge} onChange={(v) => setForm({ ...form, badge: v })} options={["", "Coup de cœur", "Nouveau", "Exclusif"]} />
+                  <Select label="Badge" val={form.badge} onChange={(v) => setForm({ ...form, badge: v })} options={BADGES.filter(Boolean)} />
                   <Select label="Statut" val={form.status} onChange={(v) => setForm({ ...form, status: v })} options={STATUSES} />
                 </div>
               </fieldset>
@@ -439,6 +434,16 @@ export default function InventoryAdmin() {
                 <textarea id="field-equipements" name="field-equipements" value={form.options} onChange={(e) => setForm({ ...form, options: e.target.value })} rows={5}
                   placeholder="Pack Sport Chrono&#10;Toit ouvrant panoramique&#10;Échappement Sport"
                   className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition resize-none"
+                  style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
+              </fieldset>
+
+              <fieldset>
+                <legend className="text-base font-bold mb-4 pb-2 border-b w-full" style={{ color: "var(--text-primary)", borderColor: "var(--border-primary)" }}>
+                  Informations complémentaires <span className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>(texte libre : travaux effectués, entretien… — affiché sur l&apos;annonce uniquement s&apos;il est rempli)</span>
+                </legend>
+                <textarea id="field-infos-complementaires" name="field-infos-complementaires" value={form.extraInfo} onChange={(e) => setForm({ ...form, extraInfo: e.target.value })} rows={5}
+                  placeholder="Ex : Distribution remplacée à 120 000 km, pneus avant neufs, vidange effectuée en mars…"
+                  className="w-full px-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-sg-accent-blue)] transition resize-y"
                   style={{ backgroundColor: "var(--bg-primary)", borderColor: "var(--border-primary)", color: "var(--text-primary)" }} />
               </fieldset>
 

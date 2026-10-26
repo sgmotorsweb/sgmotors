@@ -10,7 +10,7 @@ export interface VehicleData {
   fuel: string;
   transmission: string;
   vehicleType?: string;
-  critAir: number;
+  critAir?: number;
   color: string;
   doors: number;
   seats: number;
@@ -24,14 +24,17 @@ export interface VehicleData {
   warrantyStandard?: string;
   warrantyExtended?: string;
   sellerWarranty?: string;
+  visibility?: string;
+  extraInfo?: string;
   images: string[];
   videoUrl?: string;
   badge?: string;
   status?: string;
   views?: number;
+  createdAt?: string;
 }
 
-function normalizeVehicle(v: any): VehicleData {
+export function normalizeVehicle(v: any): VehicleData {
   if (typeof v.options === "string") { try { v.options = JSON.parse(v.options); } catch { v.options = []; } }
   if (typeof v.images === "string") { try { v.images = JSON.parse(v.images); } catch { v.images = []; } }
   v.vehicleType = v.vehicleType ?? v.vehicle_type ?? null;
@@ -39,6 +42,9 @@ function normalizeVehicle(v: any): VehicleData {
   v.powerFiscal = v.powerFiscal ?? v.power_fiscal ?? null;
   v.firstRegDate = v.firstRegDate ?? v.first_reg_date ?? null;
   v.videoUrl = v.videoUrl ?? v.video_url ?? null;
+  v.visibility = v.visibility ?? null;
+  v.extraInfo = v.extraInfo ?? v.extra_info ?? null;
+  v.createdAt = v.createdAt ?? v.created_at ?? null;
   return v;
 }
 
@@ -64,7 +70,7 @@ export async function fetchVehicleById(id: string): Promise<VehicleData | null> 
     const res = await fetch(`/api/vehicles/${encodeURIComponent(id)}`);
     if (res.ok) {
       const json = await res.json();
-      return json.data || null;
+      return json.data ? normalizeVehicle(json.data) : null;
     }
   } catch {}
   return getVehicleById(id) || null;

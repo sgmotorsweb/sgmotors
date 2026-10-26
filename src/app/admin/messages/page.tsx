@@ -1,15 +1,41 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Inbox, Mail, Phone, Car, CheckCircle, Trash2, Eye, X, MessageSquare, Search } from "lucide-react";
+import { Inbox, Mail, Phone, Car, CheckCircle, Trash2, Eye, X, MessageSquare, Search, HandCoins } from "lucide-react";
 
 interface DbMessage {
   id: string;
-  type: "callback" | "reprise" | "contact" | "recherche";
+  type: "callback" | "reprise" | "mandat" | "contact" | "recherche";
   data: Record<string, string>;
   read: boolean;
   created_at: string;
 }
+
+const TYPE_META: Record<string, { label: string; title: string; color: string; icon: typeof Car }> = {
+  callback: { label: "Appel", title: "Demande de rappel", color: "var(--color-sg-accent-blue)", icon: Phone },
+  reprise: { label: "Reprise", title: "Demande de reprise", color: "#a855f7", icon: Car },
+  mandat: { label: "Dépôt-vente / Mandat", title: "Demande de dépôt-vente / mandat", color: "#0d9488", icon: HandCoins },
+  recherche: { label: "Recherche", title: "Recherche personnalisée", color: "#f59e0b", icon: Search },
+  contact: { label: "Contact", title: "Message contact", color: "#22c55e", icon: MessageSquare },
+};
+
+const VEHICLE_FIELDS: [string, string][] = [
+  ["immatriculation", "Immatriculation"],
+  ["marque", "Marque"],
+  ["modele", "Modèle"],
+  ["version", "Version"],
+  ["finition", "Finition"],
+  ["annee", "Année"],
+  ["kilometrage", "Kilométrage"],
+  ["carburant", "Carburant"],
+  ["etat", "État"],
+  ["prixSouhaite", "Prix souhaité"],
+  ["km", "Kilométrage max"],
+  ["description", "Description"],
+];
+
+const subjectOf = (data: Record<string, string>) =>
+  data.vehicule || data.sujet || [data.immatriculation, data.marque, data.modele, data.version].filter(Boolean).join(" ");
 
 export default function MessagesPage() {
   const [messages, setMessages] = useState<DbMessage[]>([]);
@@ -81,6 +107,7 @@ export default function MessagesPage() {
               <option>Tous</option>
               <option value="callback">Appels</option>
               <option value="reprise">Reprises</option>
+              <option value="mandat">Dépôt-vente / Mandat</option>
               <option value="contact">Contact</option>
               <option value="recherche">Recherche</option>
             </select>
@@ -128,19 +155,14 @@ export default function MessagesPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="flex items-center gap-1.5" style={{
-                      color: msg.type === "callback" ? "var(--color-sg-accent-blue)" :
-                             msg.type === "reprise" ? "#a855f7" :
-                             msg.type === "recherche" ? "#f59e0b" : "#22c55e"
-                    }}>
-                      {msg.type === "callback" ? <Phone className="h-4 w-4" /> :
-                       msg.type === "reprise" ? <Car className="h-4 w-4" /> :
-                       msg.type === "recherche" ? <Search className="h-4 w-4" /> :
-                       <MessageSquare className="h-4 w-4" />}
-                      {msg.type === "callback" ? "Appel" :
-                       msg.type === "reprise" ? "Reprise" :
-                       msg.type === "recherche" ? "Recherche" : "Contact"}
-                    </span>
+                    {(() => {
+                      const meta = TYPE_META[msg.type] || TYPE_META.contact;
+                      return (
+                        <span className="flex items-center gap-1.5 font-medium" style={{ color: meta.color }}>
+                          <meta.icon className="h-4 w-4" /> {meta.label}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-6 py-4">
                     <div className="font-medium" style={{ color: "var(--text-primary)" }}>{data.prenom || ""} {data.nom || ""}</div>
@@ -149,7 +171,7 @@ export default function MessagesPage() {
                     <div style={{ color: "var(--text-secondary)" }}>{data.telephone || ""}</div>
                     <div className="text-xs" style={{ color: "var(--text-muted)" }}>{data.email || ""}</div>
                   </td>
-                  <td className="px-6 py-4 text-sm" style={{ color: "var(--text-secondary)" }}>{data.vehicule || data.sujet || data.marque || ""}{data.modele ? ` ${data.modele}` : ""}</td>
+                  <td className="px-6 py-4 text-sm" style={{ color: "var(--text-secondary)" }}>{subjectOf(data)}</td>
                   <td className="px-6 py-4 text-sm" style={{ color: "var(--text-secondary)" }}>
                     {new Date(msg.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
                   </td>
@@ -181,20 +203,20 @@ export default function MessagesPage() {
 
       {selected && (() => {
         const data = d(selected);
-        const sujet = data.vehicule || data.sujet || `${data.marque || ""} ${data.modele || ""}`.trim();
+        const sujet = subjectOf(data);
+        const meta = TYPE_META[selected.type] || TYPE_META.contact;
+        const vehicleDetails = VEHICLE_FIELDS.filter(([key]) => data[key]);
         return (
         <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-12 overflow-y-auto" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={() => setSelected(null)}>
           <div className="rounded-2xl p-8 max-w-lg w-full shadow-2xl border my-8" onClick={(e) => e.stopPropagation()} style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border-primary)" }}>
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl" style={{ backgroundColor: selected.type === "callback" ? "rgba(0,102,255,0.1)" : "rgba(168,85,247,0.1)" }}>
-                  {selected.type === "callback" ? <Phone className="h-5 w-5" style={{ color: "var(--color-sg-accent-blue)" }} /> : <Car className="h-5 w-5" style={{ color: "#a855f7" }} />}
+                <div className="p-2.5 rounded-xl" style={{ backgroundColor: "var(--bg-tertiary)" }}>
+                  <meta.icon className="h-5 w-5" style={{ color: meta.color }} />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
-                    {selected.type === "callback" ? "Demande de rappel" :
-                     selected.type === "reprise" ? "Demande de reprise" :
-                     selected.type === "recherche" ? "Requête de recherche" : "Message contact"}
+                    {meta.title}
                   </h2>
                   <p className="text-sm" style={{ color: "var(--text-muted)" }}>
                     {new Date(selected.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
@@ -228,7 +250,20 @@ export default function MessagesPage() {
                 </div>
               </div>
 
-              {sujet && (
+              {vehicleDetails.length > 0 && (
+              <div className="rounded-xl p-4 grid grid-cols-2 gap-3" style={{ backgroundColor: "var(--bg-tertiary)" }}>
+                {vehicleDetails.map(([key, label]) => (
+                  <div key={key} className={key === "description" ? "col-span-2" : ""}>
+                    <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>{label}</p>
+                    <p className="text-sm font-semibold whitespace-pre-line" style={{ color: "var(--text-primary)" }}>
+                      {key === "kilometrage" || key === "km" ? `${Number(data[key]).toLocaleString("fr-FR")} km` : data[key]}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              )}
+
+              {sujet && vehicleDetails.length === 0 && (
               <div>
                 <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-muted)" }}>Sujet / Véhicule</label>
                 <p className="font-medium" style={{ color: "var(--text-primary)" }}>{sujet}</p>

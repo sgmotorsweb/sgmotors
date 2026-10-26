@@ -133,7 +133,7 @@ export default function LegalLayout({ title, subtitle, sections }: LegalLayoutPr
                     {sec.title}
                   </h2>
                 </div>
-                <div className="prose prose-slate dark:prose-invert max-w-none text-sm md:text-base leading-relaxed space-y-4" style={{ color: "var(--text-secondary)" }}>
+                <div className="prose prose-slate max-w-none text-sm md:text-base leading-relaxed space-y-4" style={{ color: "var(--text-secondary)" }}>
                   {sec.content}
                 </div>
               </section>
